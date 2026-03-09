@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Analyze The Binding of Isaac: Rebirth savefiles and view your progress, character unlocks, and statistics",
-  "homepage": "https://yourusername.github.io/isaac-analyzer",
+  "homepage": "https://douwdy.github.io/isaac-analyzer",
   "author": "Your Name",
   "license": "MIT",
   "scripts": {

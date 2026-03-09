@@ -151,7 +151,7 @@ function App() {
   const [error, setError]         = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  const [lang, setLang]           = useState('en');
+  const [lang, setLang]           = useState(() => localStorage.getItem('lang') || 'en');
   const fileInputRef = useRef(null);
   const t = translations[lang];
 
@@ -186,7 +186,7 @@ function App() {
       <div className="app-container" onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
         <header className="app-header">
           <img src={headerLogo} alt="Dead God Tracker" className="header-logo" draggable="false" />
-          <button className="lang-btn" onClick={() => setLang(l => l === 'en' ? 'fr' : 'en')}>
+          <button className="lang-btn" onClick={() => setLang(l => { const next = l === 'en' ? 'fr' : 'en'; localStorage.setItem('lang', next); return next; })}>
             {lang === 'en' ? '🇫🇷' : '🇬🇧'}
           </button>
         </header>
@@ -233,6 +233,10 @@ function DropZone({ fileInputRef, onFile }) {
       <div className="dropzone-icon"><img src={iconBoss} className="dropzone-sprite" draggable="false" /></div>
       <div className="dropzone-title">{t.dropTitle}</div>
       <div className="dropzone-sub">{t.dropSub}</div>
+      <div className="dropzone-path-hint">
+        <span className="dropzone-path-label">{t.dropPathLabel}</span>
+        <code className="dropzone-path">{t.dropPath}</code>
+      </div>
       <button className="btn-primary" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
         {t.chooseFile}
       </button>
@@ -361,10 +365,10 @@ function computeDerived(saveData) {
   const bossesDefeated = bossValues.filter(v => v !== 0).length;
   const bossesTotal    = bossValues.length;
 
-  // Special seeds (chunk 10)
+  // Special seeds (chunk 10) — 69 easter eggs in Repentance
   const seedValues    = chunks[10]?.data?.values ?? [];
   const seedsActive   = seedValues.filter(v => v !== 0).length;
-  const seedsTotal    = seedValues.length;
+  const seedsTotal    = 69;
 
   return {
     unlockedIds,
@@ -431,7 +435,7 @@ function OverviewTab({ derived }) {
     <div>
       <div className="stats-grid">
         {stats.map(s => (
-          <div className="stat-card" key={s.label}>
+          <div className={`stat-card${s.pct >= 1 ? ' stat-card--complete' : ''}`} key={s.label}>
             <div className="stat-icon"><img src={s.icon} className="stat-icon-img" draggable="false" /></div>
             <div className="stat-label">{s.label}</div>
             <div className="stat-value">{s.value}</div>

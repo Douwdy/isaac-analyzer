@@ -133,7 +133,25 @@ body {
 }
 .dropzone-sub {
   font-size: 0.68rem; color: var(--text-dim);
-  letter-spacing: 1.5px; margin-bottom: 22px;
+  letter-spacing: 1.5px; margin-bottom: 14px;
+}
+.dropzone-path-hint {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  margin-bottom: 22px;
+}
+.dropzone-path-label {
+  font-size: 0.6rem; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 1.5px;
+}
+.dropzone-path {
+  font-family: monospace;
+  font-size: 0.72rem; color: var(--color-gold);
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(212,170,88,0.25);
+  padding: 4px 10px;
+  border-radius: 3px;
+  letter-spacing: 0;
+  user-select: all;
 }
 
 /* ── Boutons ─────────────────────────────────────────────────── */
@@ -277,6 +295,26 @@ body {
   letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px;
 }
 .stat-value { font-size: 1.2rem; font-weight: 700; color: var(--text-bright); margin-bottom: 8px; }
+.stat-card--complete {
+  border-color: rgba(212,170,88,0.7);
+  animation: stat-complete-glow 3s ease-in-out infinite;
+}
+.stat-card--complete .stat-value { color: var(--color-gold); }
+.stat-card--complete .stat-icon-img { filter: drop-shadow(0 0 8px rgba(212,170,88,0.8)); }
+.stat-card--complete .mini-progress-fill {
+  background: linear-gradient(90deg, #c88a10, #f0d060, #c88a10);
+  background-size: 200% 100%;
+  animation: stat-bar-pulse 2s ease-in-out infinite;
+}
+.stat-card--complete .mini-progress-fill::after { display: none; }
+@keyframes stat-complete-glow {
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255,200,100,0.06), inset 0 -1px 0 rgba(0,0,0,0.4), 0 3px 10px rgba(0,0,0,0.45), 0 0 10px rgba(212,170,88,0.2); }
+  50%       { box-shadow: inset 0 1px 0 rgba(255,200,100,0.06), inset 0 -1px 0 rgba(0,0,0,0.4), 0 3px 10px rgba(0,0,0,0.45), 0 0 18px rgba(212,170,88,0.5); }
+}
+@keyframes stat-bar-pulse {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
 .mini-progress-track {
   height: 5px;
   background: var(--bg-deep);
@@ -764,6 +802,7 @@ body {
   .tab-icon { height: 14px; margin-right: 4px; }
   .dropzone { padding: 32px 16px; }
   .dropzone-sub { display: none; }
+  .dropzone-path-hint { display: none; }
   .stats-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }

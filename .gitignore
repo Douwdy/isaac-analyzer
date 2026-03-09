@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Production
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+
+# Runtime
+.cache/
+*.log
+tmp/
+
+# Vite
+.vite/
+
+# Claude Code working files
+.claude/
+
+# Root-level data folder (leftover, app uses src/data/)
+data/
+
+# Stray artifacts
+{src
+
+# Template docs not needed for the project
+CONTRIBUTING.md
+DEPLOYMENT.md
+DEVELOPMENT.md

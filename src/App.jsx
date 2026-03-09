@@ -3,6 +3,10 @@ import IsaacSavefileParserV2 from './parsers/IsaacSavefileParser_v2.js';
 import achievementsData from './data/achievements.json';
 import { CHARACTERS, BOSS_LABELS, NORMAL_MARK_KEYS, TAINTED_MARK_KEYS } from './data/characterMarks.js';
 import collectiblesData from './data/collectibles.json';
+import achievementWikiLinks from './data/achievementWikiLinks.json';
+import challengeWikiLinks from './data/challengeWikiLinks.json';
+import { CHALLENGE_REWARDS } from './data/challengeRewards.js';
+import bossesData from './data/bosses.json';
 import { translations } from './data/translations.js';
 import headerLogo from './assets/sprites/headerlogo.png';
 import iconBoss         from './assets/sprites/icon/boss.webp';
@@ -13,6 +17,7 @@ import iconEasterEggs   from './assets/sprites/icon/eastereggs.webp';
 import iconCharacter    from './assets/sprites/icon/character.webp';
 import iconOverview     from './assets/sprites/icon/overview.webp';
 import iconTainted      from './assets/sprites/icon/tainted.webp';
+import iconLocked       from './assets/sprites/icon/locked.png';
 import './styles/App.css';
 
 // ─── Sprite assets (loaded eagerly via Vite glob) ─────────────────────────────
@@ -99,6 +104,12 @@ function getMarkSprite(markKey) {
 
 const LangContext = createContext('en');
 function useLang() { return translations[useContext(LangContext)]; }
+
+const WIKI_BASE = 'https://bindingofisaacrebirth.wiki.gg';
+const wikiUrl = name =>
+  WIKI_BASE + (achievementWikiLinks[name] ?? `/wiki/${encodeURIComponent(name.replace(/ /g, '_'))}`);
+const challengeWikiUrl = name =>
+  WIKI_BASE + (challengeWikiLinks[name] ?? `/wiki/${encodeURIComponent(name.replace(/ /g, '_'))}`);
 
 // ─── Données statiques ────────────────────────────────────────────────────────
 
@@ -291,6 +302,7 @@ function Dashboard({ saveData, activeTab, setActiveTab, onReset }) {
     { id: 'challenges',   icon: iconChallenges,   label: t.tabChallenges },
     { id: 'characters',   icon: iconCharacter,    label: t.tabCharacters },
     { id: 'collectibles', icon: iconCollectables, label: t.tabCollectibles },
+    // { id: 'bosses',       icon: iconBoss,         label: t.tabBosses }, // WIP
   ];
 
   return (
@@ -313,6 +325,7 @@ function Dashboard({ saveData, activeTab, setActiveTab, onReset }) {
         {activeTab === 'challenges'   && <ChallengesTab derived={derived} />}
         {activeTab === 'characters'   && <CharactersTab derived={derived} />}
         {activeTab === 'collectibles' && <CollectiblesTab derived={derived} />}
+        {activeTab === 'bosses'       && <BossesTab derived={derived} />}
       </div>
 
       <div style={{ textAlign: 'center', marginTop: 32 }}>
@@ -351,19 +364,24 @@ function computeDerived(saveData) {
     done: done !== 0,
   }));
 
-  // Collectibles (chunk 4)
+  // Collectibles (chunk 4) — skip unassigned IDs (no entry in collectiblesData)
   const collValues = chunks[4]?.data?.values ?? [];
   let seenCount = 0;
   const missedCollectibles = [];
   for (let i = 1; i < collValues.length; i++) {
+    if (!collectiblesData[String(i)]) continue; // unassigned slot
     if (collValues[i] !== 0) seenCount++;
     else missedCollectibles.push(i);
   }
 
-  // Bosses (chunk 6)
-  const bossValues     = chunks[6]?.data?.values ?? [];
-  const bossesDefeated = bossValues.filter(v => v !== 0).length;
-  const bossesTotal    = bossValues.length;
+  // Bosses (chunk 6) — 1-indexed, position in bossesData matches save file order
+  const bossValues  = chunks[6]?.data?.values ?? [];
+  const bossesList  = bossesData.map((boss, idx) => ({
+    ...boss,
+    seen: bossValues.length > idx + 1 ? bossValues[idx + 1] !== 0 : false,
+  }));
+  const bossesDefeated = bossesList.filter(b => b.seen).length;
+  const bossesTotal    = bossValues.length > 1 ? bossValues.length - 1 : bossesData.length;
 
   // Special seeds (chunk 10) — 69 easter eggs in Repentance
   const seedValues    = chunks[10]?.data?.values ?? [];
@@ -382,8 +400,8 @@ function computeDerived(saveData) {
     challengesDone: challenges.filter(c => c.done).length,
     missedCollectibles,
     seenCount,
-    collTotal: collValues.length - 1,
-    bossesDefeated, bossesTotal,
+    collTotal: Object.keys(collectiblesData).filter(k => parseInt(k) >= 1).length,
+    bossesList, bossesDefeated, bossesTotal,
     seedsActive, seedsTotal,
   };
 }
@@ -457,29 +475,33 @@ function MissingHighlights({ derived }) {
   const { lockedAchievements, challenges } = derived;
   const missingChallenges = challenges.filter(c => !c.done);
   // Group locked achievements by keyword
+  const collectibleNames = new Set(Object.values(collectiblesData));
   const buckets = { Challenges: [], Characters: [], Items: [], Other: [] };
   for (const a of lockedAchievements) {
     const ingame = (a.inGameDescription || '').toLowerCase();
     const unlock = (a.unlockDescription || '').toLowerCase();
     if (unlock.includes('challenge') || ingame.includes('challenge')) buckets.Challenges.push(a);
     else if (ingame.includes('new character')) buckets.Characters.push(a);
-    else if (ingame.includes('new item') || ingame.includes('new card') || ingame.includes('new trinket') || ingame.includes('new pill') || ingame.includes('new rune')) buckets.Items.push(a);
+    else if (collectibleNames.has(a.name)) buckets.Items.push(a);
     else buckets.Other.push(a);
   }
 
   return (
     <div className="missing-grid">
       <MissingBucket title={t.bucketChallenges(missingChallenges.length)} color="var(--color-red)">
-        {missingChallenges.map(c => <li key={c.id}>#{c.id} {c.name}</li>)}
+        {missingChallenges.map(c => <li key={c.id}><a href={challengeWikiUrl(c.name)} target="_blank" rel="noopener noreferrer">#{c.id} {c.name}</a></li>)}
       </MissingBucket>
       <MissingBucket title={t.bucketCharacters(buckets.Characters.length)} color="var(--color-teal)">
-        {buckets.Characters.slice(0, 30).map(a => <li key={a.id} title={a.unlockDescription}>#{a.id} {a.name}</li>)}
+        {buckets.Characters.length === 0
+          ? <li className="bucket-all-done">{t.bucketAllDone}</li>
+          : buckets.Characters.slice(0, 30).map(a => <li key={a.id} title={a.unlockDescription}><a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">#{a.id} {a.name}</a></li>)
+        }
       </MissingBucket>
       <MissingBucket title={t.bucketItems(buckets.Items.length)} color="var(--color-purple)">
-        {buckets.Items.slice(0, 30).map(a => <li key={a.id} title={a.unlockDescription}>#{a.id} {a.name}</li>)}
+        {buckets.Items.slice(0, 30).map(a => <li key={a.id} title={a.unlockDescription}><a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">#{a.id} {a.name}</a></li>)}
       </MissingBucket>
       <MissingBucket title={t.bucketOther(buckets.Other.length)} color="var(--color-gold)">
-        {buckets.Other.slice(0, 30).map(a => <li key={a.id} title={a.unlockDescription}>#{a.id} {a.name}</li>)}
+        {buckets.Other.slice(0, 30).map(a => <li key={a.id} title={a.unlockDescription}><a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">#{a.id} {a.name}</a></li>)}
       </MissingBucket>
     </div>
   );
@@ -520,17 +542,19 @@ function AchievementsTab({ derived }) {
           </button>
         ))}
         <span className="filter-count">{t.achievementCount(filtered.length)}</span>
+        <a className="tips-btn" href="https://bindingofisaacrebirth.wiki.gg/wiki/Achievement_Tips" target="_blank" rel="noopener noreferrer">{t.achievementTips}</a>
       </div>
       <div className="achievement-list">
         {filtered.map(a => (
-          <div key={a.id} className={`achievement-row ${a.unlocked ? 'unlocked' : 'locked'}`}>
+          <a key={a.id} className={`achievement-row ${a.unlocked ? 'unlocked' : 'locked'}`}
+             href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">
             <span className="ach-status">{a.unlocked ? '✓' : '✗'}</span>
             <span className="ach-id">#{a.id}</span>
             <div className="ach-info">
               <span className="ach-name">{a.name}</span>
               <span className="ach-desc">{a.unlockDescription}</span>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </div>
@@ -544,6 +568,7 @@ function ChallengesTab({ derived }) {
   const { challenges } = derived;
   const done  = challenges.filter(c => c.done).length;
   const total = challenges.length;
+  const [showRewards, setShowRewards] = useState(false);
 
   return (
     <div>
@@ -553,12 +578,22 @@ function ChallengesTab({ derived }) {
           <div className="mini-progress-fill" style={{ width: `${Math.round(done / total * 100)}%` }} />
         </div>
       </div>
+      <div className="filter-row">
+        <button className="spoiler-toggle-btn" onClick={() => setShowRewards(v => !v)}>
+          {showRewards ? t.hideRewards : t.revealReward}
+        </button>
+      </div>
       <div className="challenge-grid">
         {challenges.map(c => (
           <div key={c.id} className={`challenge-card ${c.done ? 'done' : 'todo'}`}>
-            <span className="chall-id">#{c.id}</span>
-            <span className="chall-status">{c.done ? '✓' : '✗'}</span>
-            <span className="chall-name">{c.name}</span>
+            <a className="chall-link" href={challengeWikiUrl(c.name)} target="_blank" rel="noopener noreferrer">
+              <span className="chall-id">#{c.id}</span>
+              <span className="chall-status">{c.done ? '✓' : '✗'}</span>
+              <span className="chall-name">{c.name}</span>
+            </a>
+            {!c.done && showRewards && CHALLENGE_REWARDS[c.id] && (
+              <span className="spoiler-text">{CHALLENGE_REWARDS[c.id]}</span>
+            )}
           </div>
         ))}
       </div>
@@ -626,12 +661,14 @@ function CharacterMarksCard({ char, unlockedIds }) {
   const totalCount = markKeys.filter(k => char.marks[k] != null).length;
   const isComplete = doneCount === totalCount;
   const sprite     = char.tainted ? getTaintedCharSprite(char.key) : getCharSprite(char.key);
+  const isLocked   = char.unlockAchId != null && !unlockedIds.has(char.unlockAchId);
 
-  const cls = ['char-card', isComplete && 'char-card--complete', char.tainted && 'char-card--tainted']
+  const cls = ['char-card', isComplete && 'char-card--complete', char.tainted && 'char-card--tainted', isLocked && 'char-card--locked']
     .filter(Boolean).join(' ');
 
   return (
     <div className={cls}>
+      {isLocked && <div className="char-locked-overlay"><img src={iconLocked} className="char-lock-icon" draggable="false" /></div>}
       <div className="char-card-portrait">
         {sprite
           ? <img src={sprite} alt={char.name} className="char-portrait-img" draggable="false" />
@@ -648,7 +685,7 @@ function CharacterMarksCard({ char, unlockedIds }) {
           </span>
         </div>
 
-        <div className="char-marks-row">
+        <div className={`char-marks-row${isLocked ? ' char-marks-row--locked' : ''}`}>
           {markKeys.map(k => {
             const achId = char.marks[k];
             if (achId == null) return null;
@@ -692,10 +729,50 @@ function CollectiblesTab({ derived }) {
       <SectionTitle>{t.missingCollectibles(missedCollectibles.length)}</SectionTitle>
       <div className="collectible-grid">
         {missedCollectibles.map(id => (
-          <div key={id} className="collectible-chip">
+          <a key={id} className="collectible-chip"
+             href={wikiUrl(collectiblesData[String(id)] ?? `Item_${id}`)} target="_blank" rel="noopener noreferrer">
             <span className="coll-id">#{id}</span>
             <span className="coll-name">{collectiblesData[String(id)] ?? `Item ${id}`}</span>
-          </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Bosses tab ───────────────────────────────────────────────────────────────
+
+const WIKI_BOSS_BASE = 'https://bindingofisaacrebirth.wiki.gg';
+
+function BossesTab({ derived }) {
+  const t = useLang();
+  const { bossesList, bossesDefeated, bossesTotal } = derived;
+  const pct = bossesTotal > 0 ? bossesDefeated / bossesTotal : 0;
+
+  return (
+    <div>
+      <div className="section-summary">
+        {t.bossesSummary(bossesDefeated, bossesTotal)}
+        <div className="mini-progress-track" style={{ marginTop: 8 }}>
+          <div className="mini-progress-fill" style={{ width: `${Math.round(pct * 100)}%` }} />
+        </div>
+      </div>
+      <div className="boss-grid">
+        {bossesList.map(boss => (
+          <a key={boss.name} className={`boss-card ${boss.seen ? 'seen' : 'unseen'}`}
+             href={WIKI_BOSS_BASE + boss.path} target="_blank" rel="noopener noreferrer">
+            <div className="boss-portrait">
+              <img
+                src={boss.sprite}
+                alt={boss.name}
+                className="boss-portrait-img"
+                draggable="false"
+                loading="lazy"
+                onError={e => { e.currentTarget.style.display = 'none'; }}
+              />
+            </div>
+            <span className="boss-name">{boss.name}</span>
+          </a>
         ))}
       </div>
     </div>

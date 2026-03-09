@@ -389,9 +389,11 @@ body {
 .bucket-list li {
   padding: 4px 12px; font-size: 0.72rem; color: var(--text-main);
   border-bottom: 1px solid rgba(255,255,255,0.02);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .bucket-list li:hover { background: var(--bg-panel2); }
+.bucket-list li a { color: inherit; text-decoration: none; display: block; }
+.bucket-list li a:hover { color: var(--color-gold); }
 
 /* ── Filtres ─────────────────────────────────────────────────── */
 
@@ -412,6 +414,14 @@ body {
   background: rgba(200,140,50,0.07);
 }
 .filter-count { color: var(--text-dim); font-size: 0.68rem; margin-left: auto; }
+.tips-btn {
+  font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--color-gold); text-decoration: none;
+  border: 1px solid rgba(212,170,88,0.35);
+  padding: 5px 10px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.tips-btn:hover { background: rgba(212,170,88,0.08); border-color: var(--color-gold); }
 
 /* ── Liste achievements ──────────────────────────────────────── */
 
@@ -425,6 +435,7 @@ body {
   background: var(--bg-panel);
   border-left: 3px solid transparent;
   transition: background 0.1s;
+  text-decoration: none; color: inherit;
 }
 .achievement-row:hover { background: var(--bg-panel2); }
 .achievement-row.unlocked { border-left-color: var(--color-green); }
@@ -445,8 +456,7 @@ body {
   gap: 6px;
 }
 .challenge-card {
-  display: flex; align-items: center; gap: 8px;
-  padding: 9px 10px;
+  display: flex; flex-direction: column;
   background: var(--bg-panel);
   border: 1px solid rgba(200,140,50,0.08);
   border-left: 3px solid transparent;
@@ -456,11 +466,42 @@ body {
 .challenge-card:hover { background: var(--bg-panel2); }
 .challenge-card.done { border-left-color: var(--color-green); background: rgba(80,160,80,0.06); }
 .challenge-card.todo { border-left-color: rgba(180,50,50,0.35); }
+.chall-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 10px;
+  text-decoration: none; color: inherit;
+}
 .chall-id     { font-size: 0.62rem; color: var(--text-dim); min-width: 22px; font-family: monospace; }
 .chall-status { font-size: 0.85rem; }
 .challenge-card.done .chall-status { color: var(--color-green); }
 .challenge-card.todo .chall-status { color: var(--color-red); }
 .chall-name   { color: var(--text-main); flex: 1; }
+
+.spoiler-toggle-btn {
+  padding: 5px 12px;
+  background: rgba(212,170,88,0.08);
+  border: 1px solid rgba(212,170,88,0.3);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.spoiler-toggle-btn:hover { background: rgba(212,170,88,0.2); color: var(--text-bright); }
+.spoiler-text {
+  display: block;
+  padding: 4px 10px 8px;
+  color: var(--color-gold);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.bucket-all-done {
+  list-style: none;
+  color: var(--color-green);
+  font-style: italic;
+  padding: 4px 0;
+}
 
 /* ── Onglet personnages / completion marks ───────────────────── */
 
@@ -548,6 +589,15 @@ body {
   height: 20px; width: auto;
   image-rendering: pixelated;
 }
+.char-locked-overlay {
+  position: absolute; inset: 0; z-index: 10;
+  background: rgba(10, 4, 2, 0.72);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.char-lock-icon { width: 48px; height: 48px; object-fit: contain; image-rendering: pixelated; }
+.char-card--locked .char-card-name { color: var(--text-dim); }
 
 /* ── Corps de la carte ── */
 .char-card-body {
@@ -575,6 +625,8 @@ body {
   display: flex; flex-wrap: wrap; gap: 5px;
   justify-content: center;
 }
+
+.char-marks-row--locked { pointer-events: none; }
 
 .mark-pip {
   width: 38px; height: 38px;
@@ -654,9 +706,78 @@ body {
   border: 1px solid rgba(200,140,50,0.1);
   padding: 3px 8px;
   display: flex; align-items: center; gap: 6px;
+  text-decoration: none; color: inherit;
+  transition: border-color 0.1s, background 0.1s;
 }
+.collectible-chip:hover { background: var(--bg-panel2); border-color: rgba(212,170,88,0.4); }
 .coll-id   { font-size: 0.65rem; color: var(--text-dim); font-family: monospace; flex-shrink: 0; }
 .coll-name { font-size: 0.72rem; color: var(--text-main); }
+
+/* ── Boss grid ───────────────────────────────────────────────── */
+
+.boss-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.boss-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-panel);
+  border: 1px solid rgba(212,170,88,0.15);
+  border-radius: 6px;
+  padding: 10px 6px 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.boss-card:hover {
+  background: var(--bg-panel2);
+  border-color: rgba(212,170,88,0.45);
+  transform: translateY(-2px);
+}
+
+.boss-card.seen {
+  border-color: rgba(80,160,80,0.4);
+}
+
+.boss-card.unseen .boss-portrait-img {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+.boss-card.unseen .boss-name {
+  color: var(--text-dim);
+}
+
+.boss-portrait {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.boss-portrait-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.boss-name {
+  font-size: 0.68rem;
+  color: var(--text-main);
+  text-align: center;
+  line-height: 1.2;
+}
 
 /* ── Mods section ────────────────────────────────────────────── */
 
@@ -814,5 +935,8 @@ body {
   }
   .challenge-grid {
     grid-template-columns: 1fr;
+  }
+  .boss-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
   }
 }

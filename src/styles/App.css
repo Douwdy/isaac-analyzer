@@ -204,6 +204,20 @@ body {
   background: linear-gradient(90deg, #7a3808, #c8902a, var(--color-gold));
   transition: width 0.8s ease;
   box-shadow: 0 0 10px rgba(200,140,50,0.35);
+  position: relative;
+  overflow: hidden;
+}
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,230,150,0.35), transparent);
+  animation: bar-shimmer 2.4s ease-in-out infinite;
+}
+@keyframes bar-shimmer {
+  0%   { transform: translateX(-150%); }
+  100% { transform: translateX(400%); }
 }
 .progress-label { font-size: 0.68rem; color: var(--text-dim); letter-spacing: 1px; margin-top: 6px; }
 
@@ -273,23 +287,18 @@ body {
 .mini-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #7a3808, var(--color-gold));
+  position: relative;
+  overflow: hidden;
+}
+.mini-progress-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,230,150,0.35), transparent);
+  animation: bar-shimmer 2.4s ease-in-out infinite;
 }
 
-/* ── Boîtes info ─────────────────────────────────────────────── */
-
-.info-row {
-  display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;
-}
-.info-box {
-  background: var(--bg-panel2);
-  border: 1px solid rgba(200,140,50,0.12);
-  padding: 10px 18px;
-  display: flex; align-items: center; gap: 8px;
-  flex: 1; min-width: 130px;
-}
-.info-icon  { font-size: 1rem; opacity: 0.8; }
-.info-label { color: var(--text-dim); font-size: 0.65rem; letter-spacing: 1.5px; text-transform: uppercase; }
-.info-value { color: var(--text-bright); font-weight: 700; margin-left: auto; }
 
 /* ── Titres de section ───────────────────────────────────────── */
 
@@ -461,7 +470,7 @@ body {
   border-color: rgba(200,160,50,0.5);
   animation: card-glow 3s ease-in-out infinite;
 }
-.char-card--tainted { border-top: 3px solid var(--color-purple); }
+.char-card--tainted { border-top: 3px solid var(--color-red); }
 
 /* ── Portrait (en haut, pleine largeur) ── */
 .char-card-portrait {
@@ -498,10 +507,9 @@ body {
   background: rgba(255,255,255,0.03);
 }
 .char-card-portrait .tainted-badge {
-  position: absolute; top: 5px; left: 5px; z-index: 3;
-  font-size: 0.5rem; font-weight: 700;
-  background: var(--color-purple); color: #fff;
-  padding: 1px 4px; letter-spacing: 0.5px; text-transform: uppercase;
+  position: absolute; top: 4px; left: 4px; z-index: 3;
+  height: 20px; width: auto;
+  image-rendering: pixelated;
 }
 
 /* ── Corps de la carte ── */

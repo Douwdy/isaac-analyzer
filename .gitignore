@@ -36,9 +36,6 @@ tmp/
 # Root-level data folder (leftover, app uses src/data/)
 data/
 
-# Stray artifacts
-{src
-
 # Template docs not needed for the project
 CONTRIBUTING.md
 DEPLOYMENT.md

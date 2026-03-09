@@ -12,6 +12,7 @@ import iconCollectables from './assets/sprites/icon/collectables.webp';
 import iconEasterEggs   from './assets/sprites/icon/eastereggs.webp';
 import iconCharacter    from './assets/sprites/icon/character.webp';
 import iconOverview     from './assets/sprites/icon/overview.webp';
+import iconTainted      from './assets/sprites/icon/tainted.webp';
 import './styles/App.css';
 
 // ─── Sprite assets (loaded eagerly via Vite glob) ─────────────────────────────
@@ -298,15 +299,6 @@ function computeDerived(saveData) {
   const seedsActive   = seedValues.filter(v => v !== 0).length;
   const seedsTotal    = seedValues.length;
 
-  // Counters (chunk 2) for playtime / runs
-  const counterValues = chunks[2]?.data?.values ?? [];
-  // Counter 2 = playtime in seconds (approx)
-  const playtimeSec  = counterValues[2] ?? 0;
-  const playtimeH    = Math.floor(playtimeSec / 3600);
-  const playtimeM    = Math.floor((playtimeSec % 3600) / 60);
-  const totalRuns    = counterValues[9] ?? 0;
-  const totalDeaths  = counterValues[1] ?? 0;
-
   return {
     unlockedIds,
     achievementsList,
@@ -322,8 +314,6 @@ function computeDerived(saveData) {
     collTotal: collValues.length - 1,
     bossesDefeated, bossesTotal,
     seedsActive, seedsTotal,
-    playtimeH, playtimeM,
-    totalRuns, totalDeaths,
   };
 }
 
@@ -360,7 +350,6 @@ function OverviewTab({ derived }) {
     seenCount, collTotal,
     bossesDefeated, bossesTotal,
     seedsActive, seedsTotal,
-    playtimeH, playtimeM, totalRuns, totalDeaths,
   } = derived;
 
   const stats = [
@@ -386,23 +375,8 @@ function OverviewTab({ derived }) {
         ))}
       </div>
 
-      <div className="info-row">
-        <InfoBox label={t.infoPlaytime} value={`${playtimeH}h ${playtimeM}m`} />
-        <InfoBox label={t.infoRuns}     value={totalRuns} />
-        <InfoBox label={t.infoDeaths}   value={totalDeaths} />
-      </div>
-
       <SectionTitle>{t.whatsNeeded}</SectionTitle>
       <MissingHighlights derived={derived} />
-    </div>
-  );
-}
-
-function InfoBox({ label, value }) {
-  return (
-    <div className="info-box">
-      <span className="info-label">{label}</span>
-      <span className="info-value">{value}</span>
     </div>
   );
 }
@@ -592,7 +566,7 @@ function CharacterMarksCard({ char, unlockedIds }) {
           ? <img src={sprite} alt={char.name} className="char-portrait-img" draggable="false" />
           : <div className="char-portrait-placeholder" />
         }
-        {char.tainted && <span className="tainted-badge">T</span>}
+        {char.tainted && <img src={iconTainted} className="tainted-badge" draggable="false" />}
       </div>
 
       <div className="char-card-body">

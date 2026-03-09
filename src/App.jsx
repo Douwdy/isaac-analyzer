@@ -117,6 +117,33 @@ const CHALLENGE_NAMES = [
 
 const DEAD_GOD_ACHIEVEMENT_ID = 637;
 
+// ─── Mods Steam Workshop ──────────────────────────────────────────────────────
+// Édite ce tableau pour mettre à jour la vitrine de mods
+
+const MODS = [
+  {
+    id: 1,
+    name: 'More Gifts',
+    description: 'Introduces various single-use gift items, each spawning random collectibles from specific pools — Angel, Devil, Boss, and Secret rooms.',
+    url: 'https://steamcommunity.com/sharedfiles/filedetails/?id=3393586594',
+    image: 'https://images.steamusercontent.com/ugc/11919673124655618/87E287EED2A280BFC38872BC8521B6CA95970BF2/?imw=637&imh=358',
+  },
+  {
+    id: 2,
+    name: 'Elevation Dice',
+    description: 'An active item that lets you roll the dice to receive a random damage multiplier buff — high risk, high reward.',
+    url: 'https://steamcommunity.com/sharedfiles/filedetails/?id=3386916234',
+    image: 'https://images.steamusercontent.com/ugc/11919508627993492/85DEBE89AF1E350FDAC45D16C09DBDD083D2F312/?imw=637&imh=358',
+  },
+  {
+    id: 3,
+    name: 'Empowering Chip',
+    description: 'A single-use item that rerolls one random item pedestal in the room, upgrading it to a superior quality item from a random pool.',
+    url: 'https://steamcommunity.com/sharedfiles/filedetails/?id=3388652643',
+    image: 'https://images.steamusercontent.com/ugc/11919673106065268/7DA49F74030DC39E4A364CB7F1E2E727CCBE1794/?imw=637&imh=358',
+  },
+];
+
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 function App() {
@@ -160,7 +187,7 @@ function App() {
         <header className="app-header">
           <img src={headerLogo} alt="Dead God Tracker" className="header-logo" draggable="false" />
           <button className="lang-btn" onClick={() => setLang(l => l === 'en' ? 'fr' : 'en')}>
-            {lang === 'en' ? 'FR' : 'EN'}
+            {lang === 'en' ? '🇫🇷' : '🇬🇧'}
           </button>
         </header>
 
@@ -185,6 +212,13 @@ function App() {
             onReset={() => { setSaveData(null); setError(null); }}
           />
         )}
+
+        {!saveData && !isLoading && <ModsSection />}
+
+        <footer className="app-footer">
+          <a className="feedback-btn" href="https://forms.gle/JWKjpy9N7GYkptPGA" target="_blank" rel="noopener noreferrer">{t.feedback}</a>
+          <span className="footer-copy">© {new Date().getFullYear()} Dead God Tracker — not affiliated with Nicalis or Edmund McMillen</span>
+        </footer>
       </div>
     </LangContext.Provider>
   );
@@ -205,6 +239,39 @@ function DropZone({ fileInputRef, onFile }) {
       <input ref={fileInputRef} type="file" accept=".dat" style={{ display: 'none' }}
         onChange={(e) => e.target.files[0] && onFile(e.target.files[0])} />
     </div>
+  );
+}
+
+// ─── Mods section ────────────────────────────────────────────────────────────
+
+function ModsSection() {
+  const t = useLang();
+  return (
+    <section className="mods-section">
+      <h2 className="mods-title">{t.modsTitle}</h2>
+      <div className="mods-grid">
+        {MODS.map(mod => (
+          <a
+            key={mod.id}
+            className="mod-card"
+            href={mod.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {mod.image && (
+              <div className="mod-card-img">
+                <img src={mod.image} alt={mod.name} draggable="false" />
+              </div>
+            )}
+            <div className="mod-card-body">
+              <span className="mod-card-name">{mod.name}</span>
+              <span className="mod-card-desc">{mod.description}</span>
+              <span className="mod-card-cta">{t.modsCta}</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
   );
 }
 

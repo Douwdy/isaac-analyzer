@@ -238,6 +238,23 @@ body {
 }
 .progress-label { font-size: 0.68rem; color: var(--text-dim); letter-spacing: 1px; margin-top: 6px; }
 
+.dlc-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px 12px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(200,140,50,0.15);
+}
+.dlc-bar-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 4px;
+}
+.dlc-name  { font-size: 0.6rem; color: var(--color-gold); text-transform: uppercase; letter-spacing: 1px; }
+.dlc-count { font-size: 0.6rem; color: var(--text-dim); font-family: monospace; }
+.dlc-bar.complete .dlc-name  { color: var(--color-green); }
+.dlc-bar.complete .dlc-count { color: var(--color-green); }
+
 /* ── Onglets ─────────────────────────────────────────────────── */
 
 .tab-nav {
@@ -430,7 +447,7 @@ body {
   max-height: 600px; overflow-y: auto; padding-right: 4px;
 }
 .achievement-row {
-  display: flex; align-items: flex-start; gap: 10px;
+  display: flex; align-items: center; gap: 10px;
   padding: 7px 10px;
   background: var(--bg-panel);
   border-left: 3px solid transparent;
@@ -440,10 +457,13 @@ body {
 .achievement-row:hover { background: var(--bg-panel2); }
 .achievement-row.unlocked { border-left-color: var(--color-green); }
 .achievement-row.locked   { border-left-color: rgba(180,50,50,0.5); opacity: 0.75; }
-.ach-status { font-size: 0.8rem; min-width: 16px; margin-top: 1px; }
+.ach-icon { flex-shrink: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+.ach-icon img { width: 36px; height: 36px; object-fit: contain; image-rendering: pixelated; }
+.achievement-row.locked .ach-icon img { filter: grayscale(1) brightness(0.5); }
+.ach-status { font-size: 0.8rem; min-width: 16px; }
 .achievement-row.unlocked .ach-status { color: var(--color-green); }
 .achievement-row.locked   .ach-status { color: var(--color-red); }
-.ach-id    { font-size: 0.68rem; color: var(--text-dim); min-width: 36px; margin-top: 2px; font-family: monospace; }
+.ach-id    { font-size: 0.68rem; color: var(--text-dim); min-width: 36px; font-family: monospace; }
 .ach-info  { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .ach-name  { font-size: 0.8rem; color: var(--text-bright); font-weight: 600; letter-spacing: 0.3px; }
 .ach-desc  { font-size: 0.7rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -936,6 +956,9 @@ body {
   .dead-god-bar-header {
     flex-direction: column;
     gap: 4px;
+  }
+  .dlc-progress-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
   .tab-btn {
     padding: 8px 10px;

@@ -337,6 +337,13 @@ function Dashboard({ saveData, activeTab, setActiveTab, onReset }) {
 
 // ─── Derived data computation ─────────────────────────────────────────────────
 
+const DLC_RANGES = [
+  { key: 'rebirth',     label: 'Rebirth',     min: 1,   max: 178 },
+  { key: 'afterbirth',  label: 'Afterbirth',  min: 179, max: 276 },
+  { key: 'afterbirth+', label: 'Afterbirth+', min: 277, max: 403 },
+  { key: 'repentance',  label: 'Repentance',  min: 404, max: 637 },
+];
+
 function computeDerived(saveData) {
   const chunks = saveData.chunks;
 
@@ -355,6 +362,13 @@ function computeDerived(saveData) {
     .filter(a => a.id >= 1 && a.id <= DEAD_GOD_ACHIEVEMENT_ID);
 
   const lockedAchievements = achievementsList.filter(a => !a.unlocked && a.id !== DEAD_GOD_ACHIEVEMENT_ID);
+
+  const dlcProgress = DLC_RANGES.map(({ key, label, min, max }) => {
+    let unlocked = 0;
+    for (let i = min; i <= max; i++) { if (unlockedIds.has(i)) unlocked++; }
+    const total = max - min + 1;
+    return { key, label, unlocked, total, pct: unlocked / total };
+  });
 
   // Challenges (chunk 7) — données 1-indexées, index 0 ignoré
   const challValues = chunks[7]?.data?.values ?? [];
@@ -396,6 +410,7 @@ function computeDerived(saveData) {
     totalAch,
     deadGodUnlocked,
     percent: Math.floor((unlockedIds.size / totalAch) * 100),
+    dlcProgress,
     challenges,
     challengesDone: challenges.filter(c => c.done).length,
     missedCollectibles,
@@ -410,7 +425,7 @@ function computeDerived(saveData) {
 
 function DeadGodProgress({ derived }) {
   const t = useLang();
-  const { unlockedCount, totalAch, percent, deadGodUnlocked } = derived;
+  const { unlockedCount, totalAch, percent, deadGodUnlocked, dlcProgress } = derived;
   return (
     <div className="dead-god-bar-card">
       <div className="dead-god-bar-header">
@@ -424,6 +439,19 @@ function DeadGodProgress({ derived }) {
       </div>
       <div className="progress-label">
         {t.deadGodRemaining(totalAch - unlockedCount)}
+      </div>
+      <div className="dlc-progress-grid">
+        {dlcProgress.map(dlc => (
+          <div key={dlc.key} className={`dlc-bar${dlc.pct === 1 ? ' complete' : ''}`}>
+            <div className="dlc-bar-header">
+              <span className="dlc-name">{dlc.label}</span>
+              <span className="dlc-count">{dlc.unlocked}/{dlc.total}</span>
+            </div>
+            <div className="mini-progress-track">
+              <div className="mini-progress-fill" style={{ width: `${Math.round(dlc.pct * 100)}%` }} />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -522,6 +550,25 @@ function MissingBucket({ title, color, children }) {
 
 // ─── Achievements tab ─────────────────────────────────────────────────────────
 
+// Some achievement names differ from their wiki image filename
+const ACH_ICON_FILENAME = {
+  '???':                                '%3F%3F%3F',
+  "???'s Soul":                         "%3F%3F%3F's_Soul",
+  "???'s Only Friend":                  "%3F%3F%3F's_Only_Friend",
+  'Soul of&#160;???':                   'Soul_of_%3F%3F%3F',
+  'Platinum God!':                      '%21Platinum_God%21',
+  '1001%':                              '1001%25',
+  'D Infinity':                         'D_infinity',
+  'Options?':                           'Options%3F',
+  'Something wicked this way comes+!':  'Something_wicked_this_way_comes%2B%21',
+};
+
+function achIconUrl(name) {
+  const override = ACH_ICON_FILENAME[name];
+  const filename = override ?? name.replace(/ /g, '_').replace(/\?/g, '%3F').replace(/%/g, '%25').replace(/\+/g, '%2B').replace(/!/g, '%21');
+  return `https://bindingofisaacrebirth.wiki.gg/images/Achievement_${filename}_icon.png`;
+}
+
 function AchievementsTab({ derived }) {
   const t = useLang();
   const { achievementsList } = derived;
@@ -548,6 +595,14 @@ function AchievementsTab({ derived }) {
         {filtered.map(a => (
           <a key={a.id} className={`achievement-row ${a.unlocked ? 'unlocked' : 'locked'}`}
              href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">
+            <div className="ach-icon">
+              <img
+                src={achIconUrl(a.name)}
+                alt=""
+                loading="lazy"
+                onError={e => { e.currentTarget.style.visibility = 'hidden'; }}
+              />
+            </div>
             <span className="ach-status">{a.unlocked ? '✓' : '✗'}</span>
             <span className="ach-id">#{a.id}</span>
             <div className="ach-info">

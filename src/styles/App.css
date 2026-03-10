@@ -450,51 +450,73 @@ body {
 
 /* ── Grille challenges ───────────────────────────────────────── */
 
-.challenge-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 6px;
-}
-.challenge-card {
-  display: flex; flex-direction: column;
+/* ── Challenge list (nouveau layout) ────────────────────────── */
+.challenge-list { display: flex; flex-direction: column; gap: 4px; }
+
+.challenge-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 10px;
   background: var(--bg-panel);
   border: 1px solid rgba(200,140,50,0.08);
   border-left: 3px solid transparent;
-  font-size: 0.78rem;
   transition: background 0.1s;
 }
-.challenge-card:hover { background: var(--bg-panel2); }
-.challenge-card.done { border-left-color: var(--color-green); background: rgba(80,160,80,0.06); }
-.challenge-card.todo { border-left-color: rgba(180,50,50,0.35); }
-.chall-link {
-  display: flex; align-items: center; gap: 8px;
-  padding: 9px 10px;
-  text-decoration: none; color: inherit;
-}
-.chall-id     { font-size: 0.62rem; color: var(--text-dim); min-width: 22px; font-family: monospace; }
-.chall-status { font-size: 0.85rem; }
-.challenge-card.done .chall-status { color: var(--color-green); }
-.challenge-card.todo .chall-status { color: var(--color-red); }
-.chall-name   { color: var(--text-main); flex: 1; }
+.challenge-row:hover { background: var(--bg-panel2); }
+.challenge-row.done { border-left-color: var(--color-green); background: rgba(80,160,80,0.05); }
+.challenge-row.todo { border-left-color: rgba(180,50,50,0.3); }
 
-.spoiler-toggle-btn {
-  padding: 5px 12px;
-  background: rgba(212,170,88,0.08);
-  border: 1px solid rgba(212,170,88,0.3);
-  border-radius: 4px;
-  color: var(--text-dim);
-  font-size: 0.75rem;
+.chall-reward-icon {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  transition: filter 0.3s;
+}
+.chall-reward-icon img {
+  width: 40px; height: 40px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.chall-reward-icon.hidden img { filter: blur(6px) brightness(0.5); }
+.chall-reward-mystery { font-size: 1.2rem; color: var(--text-dim); }
+
+.chall-info {
+  flex: 1;
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 0;
+}
+.chall-main-link {
+  display: flex; align-items: center; gap: 6px;
+  text-decoration: none; color: inherit;
+  flex: 1; min-width: 0;
+}
+.chall-status-icon { font-size: 0.8rem; flex-shrink: 0; }
+.challenge-row.done  .chall-status-icon { color: var(--color-green); }
+.challenge-row.todo  .chall-status-icon { color: var(--color-red); }
+.chall-id   { font-size: 0.62rem; color: var(--text-dim); font-family: monospace; flex-shrink: 0; }
+.chall-name { font-size: 0.82rem; color: var(--text-main); }
+.chall-main-link:hover .chall-name { color: var(--color-gold); }
+
+.chall-eye-btn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid rgba(212,170,88,0.2);
+  border-radius: 5px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  color: var(--text-dim);
+  padding: 5px 8px;
+  display: flex; align-items: center;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
 }
-.spoiler-toggle-btn:hover { background: rgba(212,170,88,0.2); color: var(--text-bright); }
-.spoiler-text {
-  display: block;
-  padding: 4px 10px 8px;
-  color: var(--color-gold);
-  font-size: 0.72rem;
-  font-weight: 600;
+.chall-eye-btn svg { width: 20px; height: 20px; }
+.chall-eye-btn:hover { color: var(--color-gold); background: rgba(212,170,88,0.12); border-color: rgba(212,170,88,0.5); }
+
+.chall-reward-name {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  padding-left: 2px;
+  transition: color 0.2s;
 }
+.chall-reward-name.visible { color: var(--color-gold); font-weight: 600; }
 
 .bucket-all-done {
   list-style: none;
@@ -932,9 +954,6 @@ body {
   }
   .char-marks-grid-outer {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  }
-  .challenge-grid {
-    grid-template-columns: 1fr;
   }
   .boss-grid {
     grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));

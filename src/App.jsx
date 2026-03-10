@@ -563,12 +563,32 @@ function AchievementsTab({ derived }) {
 
 // ─── Challenges tab ───────────────────────────────────────────────────────────
 
+const IconEyeOpen = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M8 3C4.5 3 1.5 8 1.5 8S4.5 13 8 13s6.5-5 6.5-5S11.5 3 8 3zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+    <circle cx="8" cy="8" r="1.5"/>
+  </svg>
+);
+const IconEyeClosed = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M8 3C4.5 3 1.5 8 1.5 8S4.5 13 8 13s6.5-5 6.5-5S11.5 3 8 3zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+    <circle cx="8" cy="8" r="1.5"/>
+    <line x1="2" y1="2" x2="14" y2="14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+  </svg>
+);
+
 function ChallengesTab({ derived }) {
   const t = useLang();
   const { challenges } = derived;
   const done  = challenges.filter(c => c.done).length;
   const total = challenges.length;
-  const [showRewards, setShowRewards] = useState(false);
+  const [revealed, setRevealed] = useState(new Set());
+
+  const toggle = (id) => setRevealed(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
 
   return (
     <div>
@@ -578,24 +598,40 @@ function ChallengesTab({ derived }) {
           <div className="mini-progress-fill" style={{ width: `${Math.round(done / total * 100)}%` }} />
         </div>
       </div>
-      <div className="filter-row">
-        <button className="spoiler-toggle-btn" onClick={() => setShowRewards(v => !v)}>
-          {showRewards ? t.hideRewards : t.revealReward}
-        </button>
-      </div>
-      <div className="challenge-grid">
-        {challenges.map(c => (
-          <div key={c.id} className={`challenge-card ${c.done ? 'done' : 'todo'}`}>
-            <a className="chall-link" href={challengeWikiUrl(c.name)} target="_blank" rel="noopener noreferrer">
-              <span className="chall-id">#{c.id}</span>
-              <span className="chall-status">{c.done ? '✓' : '✗'}</span>
-              <span className="chall-name">{c.name}</span>
-            </a>
-            {!c.done && showRewards && CHALLENGE_REWARDS[c.id] && (
-              <span className="spoiler-text">{CHALLENGE_REWARDS[c.id]}</span>
-            )}
-          </div>
-        ))}
+      <div className="challenge-list">
+        {challenges.map(c => {
+          const rwd = CHALLENGE_REWARDS[c.id];
+          const revealReward = c.done || revealed.has(c.id);
+          return (
+            <div key={c.id} className={`challenge-row ${c.done ? 'done' : 'todo'}`}>
+              <div className={`chall-reward-icon${revealReward ? '' : ' hidden'}`}>
+                {rwd?.icon
+                  ? <img src={rwd.icon} alt={rwd.reward} loading="lazy"
+                         onError={e => { e.currentTarget.style.display = 'none'; }} />
+                  : <span className="chall-reward-mystery">?</span>
+                }
+              </div>
+              <div className="chall-info">
+                <a className="chall-main-link" href={challengeWikiUrl(c.name)} target="_blank" rel="noopener noreferrer">
+                  <span className="chall-status-icon">{c.done ? '✓' : '✗'}</span>
+                  <span className="chall-id">#{c.id}</span>
+                  <span className="chall-name">{c.name}</span>
+                </a>
+                {rwd && (
+                  <span className={`chall-reward-name${revealReward ? ' visible' : ''}`}>
+                    {revealReward ? rwd.reward : '???'}
+                  </span>
+                )}
+              </div>
+              {!c.done && rwd && (
+                <button className="chall-eye-btn" onClick={() => toggle(c.id)}
+                        title={revealReward ? 'Hide reward' : 'Reveal reward'}>
+                  {revealReward ? <IconEyeOpen /> : <IconEyeClosed />}
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

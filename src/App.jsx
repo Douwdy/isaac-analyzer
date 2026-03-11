@@ -6,6 +6,7 @@ import collectiblesData from './data/collectibles.json';
 import achievementWikiLinks from './data/achievementWikiLinks.json';
 import challengeWikiLinks from './data/challengeWikiLinks.json';
 import { CHALLENGE_REWARDS } from './data/challengeRewards.js';
+import { CHALLENGE_ACH } from './data/challengeAchievements.js';
 import bossesData from './data/bosses.json';
 import { translations } from './data/translations.js';
 import headerLogo from './assets/sprites/headerlogo.png';
@@ -13,11 +14,11 @@ import iconBoss         from './assets/sprites/icon/boss.webp';
 import iconAchievement  from './assets/sprites/icon/achievement.webp';
 import iconChallenges   from './assets/sprites/icon/challenges.webp';
 import iconCollectables from './assets/sprites/icon/collectables.webp';
-import iconEasterEggs   from './assets/sprites/icon/eastereggs.webp';
 import iconCharacter    from './assets/sprites/icon/character.webp';
 import iconOverview     from './assets/sprites/icon/overview.webp';
 import iconTainted      from './assets/sprites/icon/tainted.webp';
 import iconLocked       from './assets/sprites/icon/locked.png';
+import iconSteam        from './assets/sprites/icon/steam.png';
 import './styles/App.css';
 
 // ─── Sprite assets (loaded eagerly via Vite glob) ─────────────────────────────
@@ -123,7 +124,7 @@ const CHALLENGE_NAMES = [
   'Backasswards', 'Aprils fool', 'Pokey Mans', 'Ultra Hard', 'Pong',
   'Scat Man', 'Bloody Mary', 'Baptism by Fire', "Isaac's Awakening",
   'Seeing Double', 'Pica Run', 'Hot Potato', 'Cantripped!', 'Red Redemption',
-  'DELETE THIS', '???',
+  'DELETE THIS',
 ];
 
 const DEAD_GOD_ACHIEVEMENT_ID = 637;
@@ -155,16 +156,72 @@ const MODS = [
   },
 ];
 
+// ─── Steam API helpers ────────────────────────────────────────────────────────
+
+const STEAM_APP_ID = '250900';
+const STEAM_API_KEY = import.meta.env.VITE_STEAM_API_KEY ?? '';
+
+function fetchJsonp(url) {
+  const cb = 'jsonp_' + Math.round(1e6 * Math.random());
+  return new Promise((resolve, reject) => {
+    window[cb] = data => { delete window[cb]; document.body.removeChild(s); resolve(data); };
+    const s = document.createElement('script');
+    s.onerror = () => { delete window[cb]; document.body.removeChild(s); reject(new Error('network')); };
+    s.src = url + (url.includes('?') ? '&' : '?') + 'jsonp=' + cb;
+    document.body.appendChild(s);
+  });
+}
+
+async function resolveVanityUrl(vanity, t) {
+  const url = `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/`
+            + `?key=${STEAM_API_KEY}&vanityurl=${encodeURIComponent(vanity)}`;
+  let data;
+  try { data = await fetchJsonp(url); } catch { throw new Error(t.steamErrorNetwork); }
+  if (data?.response?.success !== 1) throw new Error(t.steamErrorInvalid);
+  return data.response.steamid;
+}
+
+async function loadFromSteam(input, t) {
+  if (!STEAM_API_KEY) throw new Error(t.steamErrorNoKey);
+  if (!input || input.length < 2) throw new Error(t.steamErrorInvalid);
+
+  // Resolve vanity URL if not a 17-digit SteamID64
+  let steamId = input;
+  if (!/^\d{17}$/.test(input)) {
+    steamId = await resolveVanityUrl(input, t);
+  }
+
+  const url = `https://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/`
+            + `?key=${STEAM_API_KEY}&steamid=${steamId}&appid=${STEAM_APP_ID}`;
+  let data;
+  try { data = await fetchJsonp(url); } catch { throw new Error(t.steamErrorNetwork); }
+  if (!data?.playerstats?.achievements) throw new Error(t.steamErrorPrivate);
+  const unlockedIds = new Set();
+  for (const a of data.playerstats.achievements) {
+    const m = a.name.match(/(\d+)$/);
+    if (m && a.achieved) unlockedIds.add(parseInt(m[1]));
+  }
+  return { unlockedIds, steamId, displayId: input };
+}
+
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 function App() {
   const [saveData, setSaveData]   = useState(null);
+  const [steamData, setSteamData] = useState(null);
   const [error, setError]         = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
   const [lang, setLang]           = useState(() => localStorage.getItem('lang') || 'en');
   const fileInputRef = useRef(null);
   const t = translations[lang];
+
+  const derived = useMemo(() => {
+    if (steamData) return computeSteamDerived(steamData);
+    if (saveData)  return computeDerived(saveData);
+    return null;
+  }, [saveData, steamData]);
 
   const handleFile = async (file) => {
     if (!file) return;
@@ -173,11 +230,13 @@ function App() {
       return;
     }
     setIsLoading(true);
+    setLoadingMsg(t.loading);
     setError(null);
     try {
       const buf = await file.arrayBuffer();
       const parsed = IsaacSavefileParserV2.parse(buf);
       if (!parsed.header.isValid) throw new Error(t.errorInvalidFormat);
+      setSteamData(null);
       setSaveData(parsed);
     } catch (err) {
       setError(err.message);
@@ -185,6 +244,23 @@ function App() {
       setIsLoading(false);
     }
   };
+
+  const handleSteamLoad = async (steamId) => {
+    setIsLoading(true);
+    setLoadingMsg(t.steamLoading);
+    setError(null);
+    try {
+      const data = await loadFromSteam(steamId, t);
+      setSaveData(null);
+      setSteamData(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReset = () => { setSaveData(null); setSteamData(null); setError(null); };
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -204,27 +280,27 @@ function App() {
 
         {error && <div className="error-box">{error}</div>}
 
-        {!saveData && !isLoading && (
-          <DropZone fileInputRef={fileInputRef} onFile={handleFile} />
+        {!derived && !isLoading && (
+          <DropZone fileInputRef={fileInputRef} onFile={handleFile} onSteamLoad={handleSteamLoad} />
         )}
 
         {isLoading && (
           <div className="loading-box">
             <div className="spinner" />
-            <span>{t.loading}</span>
+            <span>{loadingMsg}</span>
           </div>
         )}
 
-        {saveData && (
+        {derived && (
           <Dashboard
-            saveData={saveData}
+            derived={derived}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            onReset={() => { setSaveData(null); setError(null); }}
+            onReset={handleReset}
           />
         )}
 
-        {!saveData && !isLoading && <ModsSection />}
+        {!derived && !isLoading && <ModsSection />}
 
         <footer className="app-footer">
           <a className="feedback-btn" href="https://forms.gle/JWKjpy9N7GYkptPGA" target="_blank" rel="noopener noreferrer">{t.feedback}</a>
@@ -237,8 +313,20 @@ function App() {
 
 // ─── Drop zone ────────────────────────────────────────────────────────────────
 
-function DropZone({ fileInputRef, onFile }) {
+function DropZone({ fileInputRef, onFile, onSteamLoad }) {
   const t = useLang();
+  const [steamId, setSteamId] = useState('');
+  const [steamErr, setSteamErr] = useState('');
+  const valid = steamId.trim().length >= 2;
+  const hasKey = !!STEAM_API_KEY;
+
+  const handleSteam = async (e) => {
+    e.stopPropagation();
+    setSteamErr('');
+    try { await onSteamLoad(steamId.trim()); }
+    catch (err) { setSteamErr(err.message); }
+  };
+
   return (
     <div className="dropzone" onClick={() => fileInputRef.current?.click()}>
       <div className="dropzone-icon"><img src={iconBoss} className="dropzone-sprite" draggable="false" /></div>
@@ -253,6 +341,33 @@ function DropZone({ fileInputRef, onFile }) {
       </button>
       <input ref={fileInputRef} type="file" accept=".dat" style={{ display: 'none' }}
         onChange={(e) => e.target.files[0] && onFile(e.target.files[0])} />
+
+      <div className="steam-loader" onClick={e => e.stopPropagation()}>
+        <div className="steam-loader-divider"><span>{t.steamOr}</span></div>
+        {!hasKey ? (
+          <p className="steam-no-key">
+            {t.steamErrorNoKey}
+          </p>
+        ) : (
+          <>
+            <div className="steam-loader-form">
+              <input
+                className="steam-id-input"
+                placeholder={t.steamIdPlaceholder}
+                value={steamId}
+                onChange={e => { setSteamId(e.target.value); setSteamErr(''); }}
+                onKeyDown={e => e.key === 'Enter' && valid && handleSteam(e)}
+              />
+              <button className="btn-steam" disabled={!valid} onClick={handleSteam}>
+                <img src={iconSteam} alt="" className="btn-steam-icon" />
+                {t.steamLoadBtn}
+              </button>
+            </div>
+            {steamErr && <p className="steam-error">{steamErr}</p>}
+            <p className="steam-hint">{t.steamHint}</p>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -292,9 +407,8 @@ function ModsSection() {
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
-function Dashboard({ saveData, activeTab, setActiveTab, onReset }) {
+function Dashboard({ derived, activeTab, setActiveTab, onReset }) {
   const t = useLang();
-  const derived = useMemo(() => computeDerived(saveData), [saveData]);
 
   const tabs = [
     { id: 'overview',     icon: iconOverview,     label: t.tabOverview },
@@ -307,6 +421,11 @@ function Dashboard({ saveData, activeTab, setActiveTab, onReset }) {
 
   return (
     <>
+      {derived.source === 'steam' && (
+        <div className="steam-source-badge">
+          {t.steamBadge(derived.displayId ?? derived.steamId)}
+        </div>
+      )}
       <DeadGodProgress derived={derived} />
 
       <nav className="tab-nav">
@@ -416,8 +535,52 @@ function computeDerived(saveData) {
     missedCollectibles,
     seenCount,
     collTotal: Object.keys(collectiblesData).filter(k => parseInt(k) >= 1).length,
+    source: 'file',
     bossesList, bossesDefeated, bossesTotal,
     seedsActive, seedsTotal,
+  };
+}
+
+function computeSteamDerived({ unlockedIds, steamId, displayId }) {
+  const totalAch = DEAD_GOD_ACHIEVEMENT_ID;
+  const deadGodUnlocked = unlockedIds.has(DEAD_GOD_ACHIEVEMENT_ID);
+  const achievementsList = Object.entries(achievementsData)
+    .map(([id, a]) => ({ id: parseInt(id), ...a, unlocked: unlockedIds.has(parseInt(id)) }))
+    .filter(a => a.id >= 1 && a.id <= DEAD_GOD_ACHIEVEMENT_ID);
+  const lockedAchievements = achievementsList.filter(a => !a.unlocked && a.id !== DEAD_GOD_ACHIEVEMENT_ID);
+  const dlcProgress = DLC_RANGES.map(({ key, label, min, max }) => {
+    let unlocked = 0;
+    for (let i = min; i <= max; i++) { if (unlockedIds.has(i)) unlocked++; }
+    const total = max - min + 1;
+    return { key, label, unlocked, total, pct: unlocked / total };
+  });
+  const collTotal = Object.keys(collectiblesData).filter(k => parseInt(k) >= 1).length;
+  return {
+    source: 'steam',
+    steamId,
+    displayId: displayId ?? steamId,
+    unlockedIds,
+    achievementsList,
+    lockedAchievements,
+    unlockedCount: unlockedIds.size,
+    totalAch,
+    deadGodUnlocked,
+    percent: Math.floor((unlockedIds.size / totalAch) * 100),
+    dlcProgress,
+    challenges: CHALLENGE_NAMES.map((name, idx) => {
+      const id = idx + 1;
+      const achId = CHALLENGE_ACH[id];
+      return { id, name, done: achId != null ? unlockedIds.has(achId) : false };
+    }),
+    get challengesDone() { return this.challenges.filter(c => c.done).length; },
+    missedCollectibles: [],
+    seenCount: 0,
+    collTotal,
+    bossesList: bossesData.map(b => ({ ...b, seen: false })),
+    bossesDefeated: 0,
+    bossesTotal: bossesData.length,
+    seedsActive: 0,
+    seedsTotal: 69,
   };
 }
 
@@ -457,6 +620,19 @@ function DeadGodProgress({ derived }) {
   );
 }
 
+function SteamPartialNotice() {
+  const t = useLang();
+  return (
+    <div className="steam-partial-notice">
+      <span className="steam-partial-icon">⚠</span>
+      <div>
+        <strong>{t.steamPartialTitle}</strong>
+        <span>{t.steamPartialNotice}</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Overview tab ─────────────────────────────────────────────────────────────
 
 function OverviewTab({ derived }) {
@@ -465,16 +641,25 @@ function OverviewTab({ derived }) {
     unlockedCount, totalAch,
     challengesDone, challenges,
     seenCount, collTotal,
-    bossesDefeated, bossesTotal,
-    seedsActive, seedsTotal,
+    unlockedIds,
   } = derived;
 
+  // Compute character marks progress
+  let totalMarks = 0, doneMarks = 0;
+  for (const char of CHARACTERS) {
+    const keys = char.tainted ? TAINTED_MARK_KEYS : NORMAL_MARK_KEYS;
+    for (const k of keys) {
+      if (char.marks[k] == null) continue;
+      totalMarks++;
+      if (unlockedIds.has(char.marks[k])) doneMarks++;
+    }
+  }
+
   const stats = [
-    { label: t.statAchievements, value: `${unlockedCount} / ${totalAch}`, pct: unlockedCount / totalAch, icon: iconAchievement },
+    { label: t.statAchievements, value: `${unlockedCount} / ${totalAch}`,           pct: unlockedCount / totalAch,       icon: iconAchievement },
     { label: t.statChallenges,   value: `${challengesDone} / ${challenges.length}`, pct: challengesDone / challenges.length, icon: iconChallenges },
-    { label: t.statCollectibles, value: `${seenCount} / ${collTotal}`, pct: seenCount / collTotal, icon: iconCollectables },
-    { label: t.statBosses,       value: `${bossesDefeated} / ${bossesTotal}`, pct: bossesDefeated / bossesTotal, icon: iconBoss },
-    { label: t.statEasterEggs,   value: `${seedsActive} / ${seedsTotal}`, pct: seedsActive / seedsTotal, icon: iconEasterEggs },
+    { label: t.statMarks,        value: `${doneMarks} / ${totalMarks}`,              pct: doneMarks / totalMarks,          icon: iconCharacter },
+    ...(derived.source !== 'steam' ? [{ label: t.statCollectibles, value: `${seenCount} / ${collTotal}`, pct: seenCount / collTotal, icon: iconCollectables }] : []),
   ];
 
   return (
@@ -485,6 +670,7 @@ function OverviewTab({ derived }) {
             <div className="stat-icon"><img src={s.icon} className="stat-icon-img" draggable="false" /></div>
             <div className="stat-label">{s.label}</div>
             <div className="stat-value">{s.value}</div>
+            <div className="stat-pct">{Math.round(s.pct * 100)}%</div>
             <div className="mini-progress-track">
               <div className="mini-progress-fill" style={{ width: `${Math.round(s.pct * 100)}%` }} />
             </div>
@@ -498,45 +684,55 @@ function OverviewTab({ derived }) {
   );
 }
 
+// Pre-computed sets for accurate achievement categorization
+const MARK_ACH_IDS = new Set(
+  CHARACTERS.flatMap(char => Object.values(char.marks).filter(id => id != null))
+);
+const CHALLENGE_ACH_IDS = new Set(Object.values(CHALLENGE_ACH));
+const COLLECTIBLE_NAMES = new Set(Object.values(collectiblesData));
+
 function MissingHighlights({ derived }) {
   const t = useLang();
   const { lockedAchievements, challenges } = derived;
   const missingChallenges = challenges.filter(c => !c.done);
-  // Group locked achievements by keyword
-  const collectibleNames = new Set(Object.values(collectiblesData));
-  const buckets = { Challenges: [], Characters: [], Items: [], Other: [] };
+
+  const buckets = { Marks: [], Challenges: [], Items: [], Other: [] };
   for (const a of lockedAchievements) {
-    const ingame = (a.inGameDescription || '').toLowerCase();
-    const unlock = (a.unlockDescription || '').toLowerCase();
-    if (unlock.includes('challenge') || ingame.includes('challenge')) buckets.Challenges.push(a);
-    else if (ingame.includes('new character')) buckets.Characters.push(a);
-    else if (collectibleNames.has(a.name)) buckets.Items.push(a);
+    if (MARK_ACH_IDS.has(a.id))        buckets.Marks.push(a);
+    else if (CHALLENGE_ACH_IDS.has(a.id)) buckets.Challenges.push(a);
+    else if (COLLECTIBLE_NAMES.has(a.name)) buckets.Items.push(a);
     else buckets.Other.push(a);
   }
 
   return (
     <div className="missing-grid">
-      <MissingBucket title={t.bucketChallenges(missingChallenges.length)} color="var(--color-red)">
-        {missingChallenges.map(c => <li key={c.id}><a href={challengeWikiUrl(c.name)} target="_blank" rel="noopener noreferrer">#{c.id} {c.name}</a></li>)}
-      </MissingBucket>
-      <MissingBucket title={t.bucketCharacters(buckets.Characters.length)} color="var(--color-teal)">
-        {buckets.Characters.length === 0
+      <MissingBucket title={t.bucketChallenges(missingChallenges.length)} color="var(--color-red)" defaultOpen={missingChallenges.length > 0 && missingChallenges.length <= 15}>
+        {missingChallenges.length === 0
           ? <li className="bucket-all-done">{t.bucketAllDone}</li>
-          : buckets.Characters.slice(0, 30).map(a => <li key={a.id} title={a.unlockDescription}><a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">#{a.id} {a.name}</a></li>)
+          : missingChallenges.map(c => <li key={c.id}><a href={challengeWikiUrl(c.name)} target="_blank" rel="noopener noreferrer">#{c.id} {c.name}</a></li>)}
+      </MissingBucket>
+      <MissingBucket title={t.bucketMarks(buckets.Marks.length)} color="var(--color-teal)" defaultOpen={buckets.Marks.length > 0 && buckets.Marks.length <= 20}>
+        {buckets.Marks.length === 0
+          ? <li className="bucket-all-done">{t.bucketAllDone}</li>
+          : buckets.Marks.map(a => <li key={a.id} title={a.unlockDescription}><a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">{a.unlockDescription || a.name}</a></li>)
         }
       </MissingBucket>
-      <MissingBucket title={t.bucketItems(buckets.Items.length)} color="var(--color-purple)">
-        {buckets.Items.slice(0, 30).map(a => <li key={a.id} title={a.unlockDescription}><a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">#{a.id} {a.name}</a></li>)}
+      <MissingBucket title={t.bucketItems(buckets.Items.length)} color="var(--color-purple)" defaultOpen={false}>
+        {buckets.Items.length === 0
+          ? <li className="bucket-all-done">{t.bucketAllDone}</li>
+          : buckets.Items.map(a => <li key={a.id} title={a.unlockDescription}><a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">#{a.id} {a.name}</a></li>)}
       </MissingBucket>
-      <MissingBucket title={t.bucketOther(buckets.Other.length)} color="var(--color-gold)">
-        {buckets.Other.slice(0, 30).map(a => <li key={a.id} title={a.unlockDescription}><a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">#{a.id} {a.name}</a></li>)}
+      <MissingBucket title={t.bucketOther(buckets.Other.length)} color="var(--color-gold)" defaultOpen={false}>
+        {buckets.Other.length === 0
+          ? <li className="bucket-all-done">{t.bucketAllDone}</li>
+          : buckets.Other.map(a => <li key={a.id} title={a.unlockDescription}><a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">#{a.id} {a.name}</a></li>)}
       </MissingBucket>
     </div>
   );
 }
 
-function MissingBucket({ title, color, children }) {
-  const [open, setOpen] = useState(true);
+function MissingBucket({ title, color, children, defaultOpen = true }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="missing-bucket" style={{ '--bucket-color': color }}>
       <button className="bucket-toggle" onClick={() => setOpen(o => !o)}>
@@ -752,7 +948,8 @@ function CharacterMarksCard({ char, unlockedIds }) {
   const totalCount = markKeys.filter(k => char.marks[k] != null).length;
   const isComplete = doneCount === totalCount;
   const sprite     = char.tainted ? getTaintedCharSprite(char.key) : getCharSprite(char.key);
-  const isLocked   = char.unlockAchId != null && !unlockedIds.has(char.unlockAchId);
+  const hasSomeMarks = markKeys.some(k => char.marks[k] != null && unlockedIds.has(char.marks[k]));
+  const isLocked   = char.unlockAchId != null && !unlockedIds.has(char.unlockAchId) && !hasSomeMarks;
 
   const cls = ['char-card', isComplete && 'char-card--complete', char.tainted && 'char-card--tainted', isLocked && 'char-card--locked']
     .filter(Boolean).join(' ');
@@ -805,25 +1002,130 @@ function CharacterMarksCard({ char, unlockedIds }) {
 
 // ─── Collectibles tab ─────────────────────────────────────────────────────────
 
+// Items where collectibles.json name ≠ wiki image filename
+const COLL_ICON_FILENAME = {
+  // Wrong names / different casing in collectibles.json vs wiki filenames
+  'Blue Box':                     "Pandora's_Box",
+  'The Pony':                     'A_Pony',
+  'Pay to Play':                  'Pay_To_Play',
+  'The Book of Belial (Passive)': 'The_Book_of_Belial',
+  'Damocles (Passive)':           'Damocles',
+  'Broken Shovel':                'Broken_Shovel_1',
+  'Broken Shovel (2)':            'Broken_Shovel_2',
+  'Necronomicon':                 'The_Necronomicon',
+  'Shoop Da Whoop!':              'Shoop_da_Whoop!',
+  'We Need to Go Deeper!':        'We_Need_To_Go_Deeper!',
+  'Small Rock':                   'The_Small_Rock',
+  'Gamekid':                      'The_Gamekid',
+  'Little Chad':                  'Little_C.H.A.D.',
+  'Book of Sin':                  'The_Book_of_Sin',
+  'Forever Alone':                'Forever_alone',
+  'Daddy Long Legs':              'Daddy_Longlegs',
+  '$3 Dollar Bill':               '3_Dollar_Bill',
+  'Telepathy Book':               'Telepathy_For_Dummies',
+  'Meat!':                        'MEAT!',
+  'Key Piece #1':                 'Key_Piece_1',
+  'Key Piece #2':                 'Key_Piece_2',
+  'Contract from Below':          'Contract_From_Below',
+  '20/20':                        '20_20',
+  "???'s Only Friend":            "Blue_Baby's_Only_Friend",
+  'Wait What?':                   'Wait_What',
+  'Friend Ball':                  'Friendly_Ball',
+  // Wiki uses different name entirely
+  'Heart':                        'Less_Than_Three',
+  'Dollar Bill':                  'A_Dollar',
+  'Bogo Bombs':                   'BOGO_Bombs',
+  'Snack':                        'A_Snack',
+  'Maw of the Void':              'Maw_Of_The_Void',
+  'Spear of Destiny':             'Spear_Of_Destiny',
+  'Crown of Light':               'Crown_Of_Light',
+  'Socks':                        'Orphan_Socks',
+  'Scooper':                      'The_Scooper',
+  'Straw Man':                    'Strawman',
+  'Pound of Flesh':               'A_Pound_of_Flesh',
+  'Jelly Belly':                  'Belly_Jelly',
+  'Swarm':                        'The_Swarm',
+  // Wiki spellings differ
+  'D Infinity':                   'D_infinity',
+  'Glowing Hour Glass':           'Glowing_Hourglass',
+};
+
+function collIconUrl(name) {
+  const override = COLL_ICON_FILENAME[name];
+  if (override) return `https://bindingofisaacrebirth.wiki.gg/images/Collectible_${override}_icon.png`;
+  let filename = name;
+  // "Lil' X" → "Lil_X": wiki drops the apostrophe for all Lil' family items
+  filename = filename.replace(/^Lil' /, 'Lil_');
+  filename = filename
+    .replace(/ /g, '_')
+    .replace(/\$/g, '%24')
+    .replace(/#/g,  '%23')
+    .replace(/\//g, '%2F')
+    .replace(/\(/g, '%28')
+    .replace(/\)/g, '%29')
+    .replace(/\?/g, '%3F')
+    .replace(/!/g,  '%21')
+    .replace(/\+/g, '%2B');
+  // Apostrophes are kept literal — the wiki uses them as-is in filenames
+  return `https://bindingofisaacrebirth.wiki.gg/images/Collectible_${filename}_icon.png`;
+}
+
 function CollectiblesTab({ derived }) {
   const t = useLang();
-  const { seenCount, collTotal, missedCollectibles } = derived;
+  const { seenCount, collTotal } = derived;
+  const [filter, setFilter] = useState('missing');
+  const [search, setSearch] = useState('');
+
+  const filtered = useMemo(() => {
+    if (derived.source === 'steam') return [];
+    const missedSet = new Set(derived.missedCollectibles);
+    return Object.entries(collectiblesData)
+      .filter(([id]) => parseInt(id) >= 1)
+      .map(([id, name]) => ({ id: parseInt(id), name, seen: !missedSet.has(parseInt(id)) }))
+      .sort((a, b) => a.id - b.id)
+      .filter(c => filter === 'missing' ? !c.seen : filter === 'found' ? c.seen : true)
+      .filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase()) || String(c.id).includes(search));
+  }, [derived, filter, search]);
+
+  if (derived.source === 'steam') return <SteamPartialNotice />;
+
+  const pct = collTotal > 0 ? Math.round(seenCount / collTotal * 100) : 0;
 
   return (
     <div>
       <div className="section-summary">
         {t.collectiblesSummary(seenCount, collTotal)}
         <div className="mini-progress-track" style={{ marginTop: 8 }}>
-          <div className="mini-progress-fill" style={{ width: `${Math.round(seenCount / collTotal * 100)}%` }} />
+          <div className="mini-progress-fill" style={{ width: `${pct}%` }} />
         </div>
       </div>
-      <SectionTitle>{t.missingCollectibles(missedCollectibles.length)}</SectionTitle>
-      <div className="collectible-grid">
-        {missedCollectibles.map(id => (
-          <a key={id} className="collectible-chip"
-             href={wikiUrl(collectiblesData[String(id)] ?? `Item_${id}`)} target="_blank" rel="noopener noreferrer">
-            <span className="coll-id">#{id}</span>
-            <span className="coll-name">{collectiblesData[String(id)] ?? `Item ${id}`}</span>
+
+      <div className="filter-row">
+        {[['all', t.filterAll], ['missing', t.filterMissing], ['found', t.filterFound]].map(([f, label]) => (
+          <button key={f} className={`filter-btn ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
+            {label}
+          </button>
+        ))}
+        <input
+          className="coll-search-input"
+          placeholder={t.collSearch}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <span className="filter-count">{t.collItemCount(filtered.length)}</span>
+      </div>
+
+      <div className="coll-list">
+        {filtered.map(c => (
+          <a key={c.id} className={`coll-row ${c.seen ? 'seen' : 'missing'}`}
+             href={wikiUrl(c.name)} target="_blank" rel="noopener noreferrer">
+            <div className="coll-row-icon">
+              <img src={collIconUrl(c.name)} alt="" loading="lazy"
+                   onError={e => { e.currentTarget.style.visibility = 'hidden'; }} />
+            </div>
+            <span className="coll-row-id">#{c.id}</span>
+            <span className="coll-row-name">{c.name}</span>
+            <span className="coll-row-status">{c.seen ? '✓' : '✗'}</span>
           </a>
         ))}
       </div>

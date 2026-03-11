@@ -188,6 +188,86 @@ body {
 .btn-primary:hover  { filter: brightness(1.18); border-color: rgba(210,150,60,0.75); }
 .btn-secondary:hover { filter: brightness(1.15); border-color: rgba(160,100,40,0.65); }
 
+/* ── Steam loader (DropZone) ─────────────────────────────────── */
+
+.steam-loader {
+  width: 100%;
+  margin-top: 4px;
+}
+.steam-loader-divider {
+  display: flex; align-items: center; gap: 10px;
+  margin: 16px 0 14px;
+  color: var(--text-dim);
+  font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase;
+}
+.steam-loader-divider::before,
+.steam-loader-divider::after {
+  content: ''; flex: 1;
+  height: 1px; background: rgba(200,140,50,0.18);
+}
+.steam-loader-form {
+  display: flex; gap: 6px; justify-content: center;
+}
+.steam-id-input {
+  flex: 1; max-width: 260px;
+  background: var(--bg-deep);
+  border: 1px solid rgba(200,140,50,0.25);
+  color: var(--text-main);
+  font-family: monospace; font-size: 0.78rem;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.steam-id-input::placeholder { color: var(--text-dim); opacity: 0.6; }
+.steam-id-input:focus { border-color: rgba(212,170,88,0.6); }
+.btn-steam {
+  background: rgba(27,40,56,0.6);
+  border: 1px solid rgba(100,140,180,0.45);
+  color: #7ab8e8;
+  font-family: inherit; font-size: 0.7rem;
+  font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: filter 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.btn-steam:hover:not(:disabled) { filter: brightness(1.2); border-color: rgba(100,160,220,0.7); }
+.btn-steam:disabled { opacity: 0.4; cursor: default; }
+.btn-steam-icon { height: 16px; width: auto; vertical-align: middle; margin-right: 6px; opacity: 0.85; }
+.steam-hint { font-size: 0.62rem; color: var(--text-dim); margin-top: 8px; }
+.steam-error { font-size: 0.65rem; color: var(--color-red); margin-top: 6px; }
+.steam-no-key {
+  font-size: 0.62rem; color: var(--text-dim);
+  background: rgba(0,0,0,0.2); border: 1px solid rgba(200,140,50,0.1);
+  padding: 8px 12px; margin-top: 0;
+}
+
+/* ── Steam source badge (Dashboard) ─────────────────────────── */
+
+.steam-source-badge {
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(27,40,56,0.5);
+  border: 1px solid rgba(100,140,180,0.3);
+  color: #7ab8e8;
+  font-size: 0.65rem; letter-spacing: 1px;
+  padding: 6px 14px;
+  margin-bottom: 14px;
+}
+
+/* ── Steam partial notice (tabs) ─────────────────────────────── */
+
+.steam-partial-notice {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: rgba(80,60,10,0.25);
+  border: 1px solid rgba(200,140,50,0.2);
+  border-left: 3px solid var(--color-gold);
+  padding: 14px 16px;
+  margin-top: 8px;
+}
+.steam-partial-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; color: var(--color-gold); }
+.steam-partial-notice strong { display: block; color: var(--text-bright); font-size: 0.8rem; margin-bottom: 4px; }
+.steam-partial-notice span   { font-size: 0.72rem; color: var(--text-dim); }
+
 /* ── Barre Dead God ──────────────────────────────────────────── */
 
 .dead-god-bar-card {
@@ -294,24 +374,25 @@ body {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 .stat-card {
   background: var(--bg-panel);
   border: 2px solid rgba(150,95,40,0.4);
   box-shadow: inset 0 1px 0 rgba(255,200,100,0.06), inset 0 -1px 0 rgba(0,0,0,0.4), 0 3px 10px rgba(0,0,0,0.45);
-  padding: 14px 10px;
+  padding: 16px 12px 14px;
   text-align: center;
 }
-.stat-icon  { margin-bottom: 6px; }
+.stat-icon  { margin-bottom: 8px; }
 .stat-icon-img { height: 36px; width: auto; image-rendering: pixelated; filter: drop-shadow(0 0 6px rgba(200,140,50,0.3)); }
 .stat-label {
-  font-size: 0.6rem; color: var(--text-dim);
-  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px;
+  font-size: 0.58rem; color: var(--text-dim);
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;
 }
-.stat-value { font-size: 1.2rem; font-weight: 700; color: var(--text-bright); margin-bottom: 8px; }
+.stat-value { font-size: 1.15rem; font-weight: 700; color: var(--text-bright); margin-bottom: 2px; }
+.stat-pct   { font-size: 0.65rem; color: var(--text-dim); margin-bottom: 8px; font-family: monospace; }
 .stat-card--complete {
   border-color: rgba(212,170,88,0.7);
   animation: stat-complete-glow 3s ease-in-out infinite;
@@ -740,20 +821,52 @@ body {
 .mark-pip:not(.mark-pip--done) .mark-pip-fallback { color: var(--color-red); }
 .mark-pip--done .mark-pip-fallback { color: var(--color-green); }
 
-/* ── Grille collectibles ─────────────────────────────────────── */
+/* ── Onglet collectibles ─────────────────────────────────────── */
 
-.collectible-grid { display: flex; flex-wrap: wrap; gap: 4px; }
-.collectible-chip {
-  background: var(--bg-panel);
-  border: 1px solid rgba(200,140,50,0.1);
-  padding: 3px 8px;
-  display: flex; align-items: center; gap: 6px;
-  text-decoration: none; color: inherit;
-  transition: border-color 0.1s, background 0.1s;
+.coll-search-input {
+  background: var(--bg-deep);
+  border: 1px solid rgba(200,140,50,0.25);
+  color: var(--text-main);
+  font-family: inherit; font-size: 0.72rem;
+  padding: 5px 10px;
+  outline: none;
+  flex: 1; max-width: 200px; margin-left: auto;
+  transition: border-color 0.15s;
 }
-.collectible-chip:hover { background: var(--bg-panel2); border-color: rgba(212,170,88,0.4); }
-.coll-id   { font-size: 0.65rem; color: var(--text-dim); font-family: monospace; flex-shrink: 0; }
-.coll-name { font-size: 0.72rem; color: var(--text-main); }
+.coll-search-input::placeholder { color: var(--text-dim); opacity: 0.6; }
+.coll-search-input:focus { border-color: rgba(212,170,88,0.6); }
+
+.coll-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  max-height: 580px; overflow-y: auto; padding-right: 4px;
+}
+.coll-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px;
+  background: var(--bg-panel);
+  border-left: 2px solid transparent;
+  text-decoration: none; color: inherit;
+  transition: background 0.1s;
+  min-width: 0;
+}
+.coll-row:hover { background: var(--bg-panel2); }
+.coll-row.seen    { border-left-color: var(--color-green); }
+.coll-row.missing { border-left-color: rgba(180,50,50,0.35); opacity: 0.65; }
+.coll-row-icon {
+  flex-shrink: 0; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+}
+.coll-row-icon img {
+  width: 28px; height: 28px; object-fit: contain; image-rendering: pixelated;
+}
+.coll-row.missing .coll-row-icon img { filter: grayscale(1) brightness(0.4); }
+.coll-row-id   { font-size: 0.6rem; color: var(--text-dim); font-family: monospace; flex-shrink: 0; min-width: 32px; }
+.coll-row-name { font-size: 0.72rem; color: var(--text-main); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.coll-row-status { font-size: 0.75rem; flex-shrink: 0; }
+.coll-row.seen    .coll-row-status { color: var(--color-green); }
+.coll-row.missing .coll-row-status { color: var(--color-red); }
 
 /* ── Boss grid ───────────────────────────────────────────────── */
 
@@ -970,7 +1083,7 @@ body {
   .dropzone-sub { display: none; }
   .dropzone-path-hint { display: none; }
   .stats-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
   .missing-grid {
     grid-template-columns: 1fr;
@@ -980,5 +1093,12 @@ body {
   }
   .boss-grid {
     grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  }
+  .coll-list {
+    grid-template-columns: 1fr;
+  }
+  .coll-search-input {
+    max-width: 100%;
+    margin-left: 0;
   }
 }

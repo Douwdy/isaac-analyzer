@@ -60,6 +60,11 @@ body {
   border-bottom: 1px solid rgba(200,140,60,0.2);
   position: relative;
 }
+.version-badge {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
 .header-logo {
   max-height: 90px;
   width: auto;
@@ -374,7 +379,7 @@ body {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
   margin-bottom: 24px;
 }

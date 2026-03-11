@@ -302,13 +302,3 @@ export const CHARACTERS = [
   },
 ];
 
-// Mapping clé SpriteManager → index dans CHARACTERS[]
-// (le spritesheet n'a que les 17 persos normaux, pas les tainted)
-export const SPRITE_KEY_TO_CHAR_ID = {
-  isaac: 0, magdalene: 1, cain: 2, judas: 3,
-  blue_baby: 4, eve: 5, samson: 6, azazel: 7, lazarus: 8,
-  eden: 9, lost: 10, lilith: 11, keeper: 12, apollyon: 13,
-  the_forgotten: 14, bethany: 15, jacob_esau: 16,
-};
-
-

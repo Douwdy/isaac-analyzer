@@ -128,6 +128,7 @@ const CHALLENGE_NAMES = [
 ];
 
 const DEAD_GOD_ACHIEVEMENT_ID = 637;
+const TOTAL_ACHIEVEMENTS = 641; // 638-641 added in Repentance+
 
 // ─── Mods Steam Workshop ──────────────────────────────────────────────────────
 // Édite ce tableau pour mettre à jour la vitrine de mods
@@ -304,6 +305,7 @@ function App() {
 
         <footer className="app-footer">
           <a className="feedback-btn" href="https://forms.gle/JWKjpy9N7GYkptPGA" target="_blank" rel="noopener noreferrer">{t.feedback}</a>
+          <span className="version-badge">Dead God Tracker - v1.2.1</span>
           <span className="footer-copy">© {new Date().getFullYear()} Dead God Tracker — not affiliated with Nicalis or Edmund McMillen</span>
         </footer>
       </div>
@@ -460,7 +462,7 @@ const DLC_RANGES = [
   { key: 'rebirth',     label: 'Rebirth',     min: 1,   max: 178 },
   { key: 'afterbirth',  label: 'Afterbirth',  min: 179, max: 276 },
   { key: 'afterbirth+', label: 'Afterbirth+', min: 277, max: 403 },
-  { key: 'repentance',  label: 'Repentance',  min: 404, max: 637 },
+  { key: 'repentance',  label: 'Repentance',  min: 404, max: 641 },
 ];
 
 function computeDerived(saveData) {
@@ -472,13 +474,13 @@ function computeDerived(saveData) {
   for (let i = 1; i < achValues.length; i++) {
     if (achValues[i] !== 0) unlockedIds.add(i);
   }
-  const totalAch = DEAD_GOD_ACHIEVEMENT_ID; // 637 real achievements
+  const totalAch = TOTAL_ACHIEVEMENTS;
   const deadGodUnlocked = unlockedIds.has(DEAD_GOD_ACHIEVEMENT_ID);
 
   // Build achievement details with locked/unlocked info
   const achievementsList = Object.entries(achievementsData)
     .map(([id, a]) => ({ id: parseInt(id), ...a, unlocked: unlockedIds.has(parseInt(id)) }))
-    .filter(a => a.id >= 1 && a.id <= DEAD_GOD_ACHIEVEMENT_ID);
+    .filter(a => a.id >= 1 && a.id <= TOTAL_ACHIEVEMENTS);
 
   const lockedAchievements = achievementsList.filter(a => !a.unlocked && a.id !== DEAD_GOD_ACHIEVEMENT_ID);
 
@@ -542,11 +544,11 @@ function computeDerived(saveData) {
 }
 
 function computeSteamDerived({ unlockedIds, steamId, displayId }) {
-  const totalAch = DEAD_GOD_ACHIEVEMENT_ID;
+  const totalAch = TOTAL_ACHIEVEMENTS;
   const deadGodUnlocked = unlockedIds.has(DEAD_GOD_ACHIEVEMENT_ID);
   const achievementsList = Object.entries(achievementsData)
     .map(([id, a]) => ({ id: parseInt(id), ...a, unlocked: unlockedIds.has(parseInt(id)) }))
-    .filter(a => a.id >= 1 && a.id <= DEAD_GOD_ACHIEVEMENT_ID);
+    .filter(a => a.id >= 1 && a.id <= TOTAL_ACHIEVEMENTS);
   const lockedAchievements = achievementsList.filter(a => !a.unlocked && a.id !== DEAD_GOD_ACHIEVEMENT_ID);
   const dlcProgress = DLC_RANGES.map(({ key, label, min, max }) => {
     let unlocked = 0;

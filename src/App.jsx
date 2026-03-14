@@ -1,8 +1,9 @@
-import { useState, useRef, useMemo, createContext, useContext } from 'react';
+import { useState, useRef, useMemo, useCallback, createContext, useContext } from 'react';
 import IsaacSavefileParserV2 from './parsers/IsaacSavefileParser_v2.js';
 import achievementsData from './data/achievements.json';
 import { CHARACTERS, BOSS_LABELS, NORMAL_MARK_KEYS, TAINTED_MARK_KEYS } from './data/characterMarks.js';
 import collectiblesData from './data/collectibles.json';
+import collectibleUnlocks from './data/collectibleUnlocks.json';
 import achievementWikiLinks from './data/achievementWikiLinks.json';
 import challengeWikiLinks from './data/challengeWikiLinks.json';
 import { CHALLENGE_REWARDS } from './data/challengeRewards.js';
@@ -218,6 +219,12 @@ function App() {
   const fileInputRef = useRef(null);
   const t = translations[lang];
 
+  const toggleLang = useCallback(() => setLang(l => {
+    const next = l === 'en' ? 'fr' : 'en';
+    localStorage.setItem('lang', next);
+    return next;
+  }), []);
+
   const derived = useMemo(() => {
     if (steamData) return computeSteamDerived(steamData);
     if (saveData)  return computeDerived(saveData);
@@ -274,7 +281,7 @@ function App() {
       <div className="app-container" onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
         <header className="app-header">
           <img src={headerLogo} alt="Dead God Tracker" className="header-logo" draggable="false" />
-          <button className="lang-btn" onClick={() => setLang(l => { const next = l === 'en' ? 'fr' : 'en'; localStorage.setItem('lang', next); return next; })}>
+          <button className="lang-btn" onClick={toggleLang}>
             {lang === 'en' ? '🇫🇷' : '🇬🇧'}
           </button>
         </header>
@@ -449,7 +456,7 @@ function Dashboard({ derived, activeTab, setActiveTab, onReset }) {
         {activeTab === 'bosses'       && <BossesTab derived={derived} />}
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: 32 }}>
+      <div className="reset-row">
         <button className="btn-secondary" onClick={onReset}>{t.loadAnother}</button>
       </div>
     </>
@@ -465,6 +472,21 @@ const DLC_RANGES = [
   { key: 'repentance',  label: 'Repentance',  min: 404, max: 641 },
 ];
 
+// Shared helpers — used by both computeDerived and computeSteamDerived
+function buildAchievementData(unlockedIds) {
+  const achievementsList = Object.entries(achievementsData)
+    .map(([id, a]) => ({ id: parseInt(id), ...a, unlocked: unlockedIds.has(parseInt(id)) }))
+    .filter(a => a.id >= 1 && a.id <= TOTAL_ACHIEVEMENTS);
+  const lockedAchievements = achievementsList.filter(a => !a.unlocked && a.id !== DEAD_GOD_ACHIEVEMENT_ID);
+  const dlcProgress = DLC_RANGES.map(({ key, label, min, max }) => {
+    let unlocked = 0;
+    for (let i = min; i <= max; i++) { if (unlockedIds.has(i)) unlocked++; }
+    const total = max - min + 1;
+    return { key, label, unlocked, total, pct: unlocked / total };
+  });
+  return { achievementsList, lockedAchievements, dlcProgress };
+}
+
 function computeDerived(saveData) {
   const chunks = saveData.chunks;
 
@@ -477,25 +499,13 @@ function computeDerived(saveData) {
   const totalAch = TOTAL_ACHIEVEMENTS;
   const deadGodUnlocked = unlockedIds.has(DEAD_GOD_ACHIEVEMENT_ID);
 
-  // Build achievement details with locked/unlocked info
-  const achievementsList = Object.entries(achievementsData)
-    .map(([id, a]) => ({ id: parseInt(id), ...a, unlocked: unlockedIds.has(parseInt(id)) }))
-    .filter(a => a.id >= 1 && a.id <= TOTAL_ACHIEVEMENTS);
-
-  const lockedAchievements = achievementsList.filter(a => !a.unlocked && a.id !== DEAD_GOD_ACHIEVEMENT_ID);
-
-  const dlcProgress = DLC_RANGES.map(({ key, label, min, max }) => {
-    let unlocked = 0;
-    for (let i = min; i <= max; i++) { if (unlockedIds.has(i)) unlocked++; }
-    const total = max - min + 1;
-    return { key, label, unlocked, total, pct: unlocked / total };
-  });
+  const { achievementsList, lockedAchievements, dlcProgress } = buildAchievementData(unlockedIds);
 
   // Challenges (chunk 7) — données 1-indexées, index 0 ignoré
   const challValues = chunks[7]?.data?.values ?? [];
-  const challenges = challValues.slice(1).map((done, idx) => ({
+  const challenges = challValues.slice(1, CHALLENGE_NAMES.length + 1).map((done, idx) => ({
     id: idx + 1,
-    name: CHALLENGE_NAMES[idx] ?? `Challenge ${idx + 1}`,
+    name: CHALLENGE_NAMES[idx],
     done: done !== 0,
   }));
 
@@ -546,17 +556,13 @@ function computeDerived(saveData) {
 function computeSteamDerived({ unlockedIds, steamId, displayId }) {
   const totalAch = TOTAL_ACHIEVEMENTS;
   const deadGodUnlocked = unlockedIds.has(DEAD_GOD_ACHIEVEMENT_ID);
-  const achievementsList = Object.entries(achievementsData)
-    .map(([id, a]) => ({ id: parseInt(id), ...a, unlocked: unlockedIds.has(parseInt(id)) }))
-    .filter(a => a.id >= 1 && a.id <= TOTAL_ACHIEVEMENTS);
-  const lockedAchievements = achievementsList.filter(a => !a.unlocked && a.id !== DEAD_GOD_ACHIEVEMENT_ID);
-  const dlcProgress = DLC_RANGES.map(({ key, label, min, max }) => {
-    let unlocked = 0;
-    for (let i = min; i <= max; i++) { if (unlockedIds.has(i)) unlocked++; }
-    const total = max - min + 1;
-    return { key, label, unlocked, total, pct: unlocked / total };
-  });
+  const { achievementsList, lockedAchievements, dlcProgress } = buildAchievementData(unlockedIds);
   const collTotal = Object.keys(collectiblesData).filter(k => parseInt(k) >= 1).length;
+  const challenges = CHALLENGE_NAMES.map((name, idx) => {
+    const id = idx + 1;
+    const achId = CHALLENGE_ACH[id];
+    return { id, name, done: achId != null ? unlockedIds.has(achId) : false };
+  });
   return {
     source: 'steam',
     steamId,
@@ -569,12 +575,8 @@ function computeSteamDerived({ unlockedIds, steamId, displayId }) {
     deadGodUnlocked,
     percent: Math.floor((unlockedIds.size / totalAch) * 100),
     dlcProgress,
-    challenges: CHALLENGE_NAMES.map((name, idx) => {
-      const id = idx + 1;
-      const achId = CHALLENGE_ACH[id];
-      return { id, name, done: achId != null ? unlockedIds.has(achId) : false };
-    }),
-    get challengesDone() { return this.challenges.filter(c => c.done).length; },
+    challenges,
+    challengesDone: challenges.filter(c => c.done).length,
     missedCollectibles: [],
     seenCount: 0,
     collTotal,
@@ -646,22 +648,13 @@ function OverviewTab({ derived }) {
     unlockedIds,
   } = derived;
 
-  // Compute character marks progress
-  let totalMarks = 0, doneMarks = 0;
-  for (const char of CHARACTERS) {
-    const keys = char.tainted ? TAINTED_MARK_KEYS : NORMAL_MARK_KEYS;
-    for (const k of keys) {
-      if (char.marks[k] == null) continue;
-      totalMarks++;
-      if (unlockedIds.has(char.marks[k])) doneMarks++;
-    }
-  }
+  const { totalMarks, doneMarks } = computeMarksProgress(unlockedIds);
 
   const stats = [
-    { label: t.statAchievements, value: `${unlockedCount} / ${totalAch}`,           pct: unlockedCount / totalAch,       icon: iconAchievement },
-    { label: t.statChallenges,   value: `${challengesDone} / ${challenges.length}`, pct: challengesDone / challenges.length, icon: iconChallenges },
-    { label: t.statMarks,        value: `${doneMarks} / ${totalMarks}`,              pct: doneMarks / totalMarks,          icon: iconCharacter },
-    ...(derived.source !== 'steam' ? [{ label: t.statCollectibles, value: `${seenCount} / ${collTotal}`, pct: seenCount / collTotal, icon: iconCollectables }] : []),
+    { label: t.statAchievements, value: `${unlockedCount} / ${totalAch}`,           pct: totalAch       > 0 ? unlockedCount  / totalAch           : 0, icon: iconAchievement },
+    { label: t.statChallenges,   value: `${challengesDone} / ${challenges.length}`, pct: challenges.length > 0 ? challengesDone / challenges.length : 0, icon: iconChallenges },
+    { label: t.statMarks,        value: `${doneMarks} / ${totalMarks}`,              pct: totalMarks     > 0 ? doneMarks      / totalMarks           : 0, icon: iconCharacter },
+    ...(derived.source !== 'steam' ? [{ label: t.statCollectibles, value: `${seenCount} / ${collTotal}`, pct: collTotal > 0 ? seenCount / collTotal : 0, icon: iconCollectables }] : []),
   ];
 
   return (
@@ -691,7 +684,8 @@ const MARK_ACH_IDS = new Set(
   CHARACTERS.flatMap(char => Object.values(char.marks).filter(id => id != null))
 );
 const CHALLENGE_ACH_IDS = new Set(Object.values(CHALLENGE_ACH));
-const COLLECTIBLE_NAMES = new Set(Object.values(collectiblesData));
+// Achievement IDs that unlock a collectible (reverse of collectibleUnlocks)
+const COLL_UNLOCK_ACH_IDS = new Set(Object.values(collectibleUnlocks));
 
 function MissingHighlights({ derived }) {
   const t = useLang();
@@ -702,7 +696,7 @@ function MissingHighlights({ derived }) {
   for (const a of lockedAchievements) {
     if (MARK_ACH_IDS.has(a.id))        buckets.Marks.push(a);
     else if (CHALLENGE_ACH_IDS.has(a.id)) buckets.Challenges.push(a);
-    else if (COLLECTIBLE_NAMES.has(a.name)) buckets.Items.push(a);
+    else if (COLL_UNLOCK_ACH_IDS.has(a.id)) buckets.Items.push(a);
     else buckets.Other.push(a);
   }
 
@@ -737,7 +731,7 @@ function MissingBucket({ title, color, children, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="missing-bucket" style={{ '--bucket-color': color }}>
-      <button className="bucket-toggle" onClick={() => setOpen(o => !o)}>
+      <button className="bucket-toggle" onClick={() => setOpen(o => !o)} aria-expanded={open}>
         <span>{title}</span>
         <span>{open ? '▲' : '▼'}</span>
       </button>
@@ -772,11 +766,11 @@ function AchievementsTab({ derived }) {
   const { achievementsList } = derived;
   const [filter, setFilter] = useState('locked');
 
-  const filtered = achievementsList.filter(a => {
+  const filtered = useMemo(() => achievementsList.filter(a => {
     if (filter === 'locked')   return !a.unlocked;
     if (filter === 'unlocked') return a.unlocked;
     return true;
-  });
+  }), [achievementsList, filter]);
 
   return (
     <div>
@@ -837,18 +831,18 @@ function ChallengesTab({ derived }) {
   const total = challenges.length;
   const [revealed, setRevealed] = useState(new Set());
 
-  const toggle = (id) => setRevealed(prev => {
+  const toggle = useCallback((id) => setRevealed(prev => {
     const next = new Set(prev);
     next.has(id) ? next.delete(id) : next.add(id);
     return next;
-  });
+  }), []);
 
   return (
     <div>
       <div className="section-summary">
         {t.challengesSummary(done, total)}
         <div className="mini-progress-track" style={{ marginTop: 8 }}>
-          <div className="mini-progress-fill" style={{ width: `${Math.round(done / total * 100)}%` }} />
+          <div className="mini-progress-fill" style={{ width: `${total > 0 ? Math.round(done / total * 100) : 0}%` }} />
         </div>
       </div>
       <div className="challenge-list">
@@ -878,7 +872,8 @@ function ChallengesTab({ derived }) {
               </div>
               {!c.done && rwd && (
                 <button className="chall-eye-btn" onClick={() => toggle(c.id)}
-                        title={revealReward ? 'Hide reward' : 'Reveal reward'}>
+                        title={revealReward ? t.hideRewardTooltip : t.revealRewardTooltip}
+                        aria-label={revealReward ? t.hideRewardTooltip : t.revealRewardTooltip}>
                   {revealReward ? <IconEyeOpen /> : <IconEyeClosed />}
                 </button>
               )}
@@ -892,21 +887,8 @@ function ChallengesTab({ derived }) {
 
 // ─── Characters tab ───────────────────────────────────────────────────────────
 
-function CharactersTab({ derived }) {
-  const t = useLang();
-  const { unlockedIds } = derived;
-  const [filter, setFilter] = useState('all');
-
-  const filtered = CHARACTERS.filter(char => {
-    if (filter === 'normal')     return !char.tainted;
-    if (filter === 'tainted')    return char.tainted;
-    if (filter === 'incomplete') {
-      const keys = char.tainted ? TAINTED_MARK_KEYS : NORMAL_MARK_KEYS;
-      return keys.some(k => char.marks[k] != null && !unlockedIds.has(char.marks[k]));
-    }
-    return true;
-  });
-
+// Shared helper — avoids duplicating the marks-counting loop in OverviewTab and CharactersTab
+function computeMarksProgress(unlockedIds) {
   let totalMarks = 0, doneMarks = 0;
   for (const char of CHARACTERS) {
     const keys = char.tainted ? TAINTED_MARK_KEYS : NORMAL_MARK_KEYS;
@@ -916,13 +898,32 @@ function CharactersTab({ derived }) {
       if (unlockedIds.has(char.marks[k])) doneMarks++;
     }
   }
+  return { totalMarks, doneMarks };
+}
+
+function CharactersTab({ derived }) {
+  const t = useLang();
+  const { unlockedIds } = derived;
+  const [filter, setFilter] = useState('all');
+
+  const filtered = useMemo(() => CHARACTERS.filter(char => {
+    if (filter === 'normal')     return !char.tainted;
+    if (filter === 'tainted')    return char.tainted;
+    if (filter === 'incomplete') {
+      const keys = char.tainted ? TAINTED_MARK_KEYS : NORMAL_MARK_KEYS;
+      return keys.some(k => char.marks[k] != null && !unlockedIds.has(char.marks[k]));
+    }
+    return true;
+  }), [filter, unlockedIds]);
+
+  const { totalMarks, doneMarks } = useMemo(() => computeMarksProgress(unlockedIds), [unlockedIds]);
 
   return (
     <div>
       <div className="section-summary">
         {t.marksSummary(doneMarks, totalMarks)}
         <div className="mini-progress-track" style={{ marginTop: 8 }}>
-          <div className="mini-progress-fill" style={{ width: `${Math.round(doneMarks / totalMarks * 100)}%` }} />
+          <div className="mini-progress-fill" style={{ width: `${totalMarks > 0 ? Math.round(doneMarks / totalMarks * 100) : 0}%` }} />
         </div>
       </div>
 
@@ -1004,6 +1005,13 @@ function CharacterMarksCard({ char, unlockedIds }) {
 
 // ─── Collectibles tab ─────────────────────────────────────────────────────────
 
+// collectible id → wiki path, derived by crossing collectibleUnlocks → achievements → achievementWikiLinks
+const COLL_WIKI_BY_ID = Object.fromEntries(
+  Object.entries(collectibleUnlocks)
+    .map(([collId, achId]) => [parseInt(collId), achievementWikiLinks[achievementsData[String(achId)]?.name]])
+    .filter(([, link]) => link)
+);
+
 // Items where collectibles.json name ≠ wiki image filename
 const COLL_ICON_FILENAME = {
   // Wrong names / different casing in collectibles.json vs wiki filenames
@@ -1072,6 +1080,31 @@ function collIconUrl(name) {
   return `https://bindingofisaacrebirth.wiki.gg/images/Collectible_${filename}_icon.png`;
 }
 
+function collWikiUrl(id, name) {
+  // 1. Achievement-derived link (most accurate — crosses collectibleUnlocks → achievements → achievementWikiLinks)
+  if (COLL_WIKI_BY_ID[id]) return WIKI_BASE + COLL_WIKI_BY_ID[id];
+  // 2. Same name correction map used for icons (wiki page names match icon filenames)
+  const override = COLL_ICON_FILENAME[name];
+  if (override) {
+    const pageName = override.replace(/'/g, '%27').replace(/!/g, '%21');
+    return `${WIKI_BASE}/wiki/${pageName}`;
+  }
+  // 3. Build from collectible name directly
+  const filename = name
+    .replace(/^Lil' /, 'Lil_')
+    .replace(/ /g, '_')
+    .replace(/'/g, '%27')
+    .replace(/\$/g, '%24')
+    .replace(/#/g,  '%23')
+    .replace(/\//g, '%2F')
+    .replace(/\(/g, '%28')
+    .replace(/\)/g, '%29')
+    .replace(/\?/g, '%3F')
+    .replace(/!/g,  '%21')
+    .replace(/\+/g, '%2B');
+  return `${WIKI_BASE}/wiki/${filename}`;
+}
+
 function CollectiblesTab({ derived }) {
   const t = useLang();
   const { seenCount, collTotal } = derived;
@@ -1081,11 +1114,23 @@ function CollectiblesTab({ derived }) {
   const filtered = useMemo(() => {
     if (derived.source === 'steam') return [];
     const missedSet = new Set(derived.missedCollectibles);
+    const { unlockedIds } = derived;
     return Object.entries(collectiblesData)
       .filter(([id]) => parseInt(id) >= 1)
-      .map(([id, name]) => ({ id: parseInt(id), name, seen: !missedSet.has(parseInt(id)) }))
+      .map(([id, name]) => {
+        const numId = parseInt(id);
+        const seen = !missedSet.has(numId);
+        const requiredAch = collectibleUnlocks[id];
+        const unlocked = requiredAch == null || unlockedIds.has(requiredAch);
+        return { id: numId, name, seen, unlocked };
+      })
       .sort((a, b) => a.id - b.id)
-      .filter(c => filter === 'missing' ? !c.seen : filter === 'found' ? c.seen : true)
+      .filter(c => {
+        if (filter === 'missing')         return !c.seen;
+        if (filter === 'found')           return c.seen;
+        if (filter === 'unlocked_missing') return !c.seen && c.unlocked;
+        return true;
+      })
       .filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase()) || String(c.id).includes(search));
   }, [derived, filter, search]);
 
@@ -1103,7 +1148,12 @@ function CollectiblesTab({ derived }) {
       </div>
 
       <div className="filter-row">
-        {[['all', t.filterAll], ['missing', t.filterMissing], ['found', t.filterFound]].map(([f, label]) => (
+        {[
+          ['all',              t.filterAll],
+          ['missing',          t.filterMissing],
+          ['found',            t.filterFound],
+          ['unlocked_missing', t.filterUnlockedMissing],
+        ].map(([f, label]) => (
           <button key={f} className={`filter-btn ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
             {label}
           </button>
@@ -1120,7 +1170,7 @@ function CollectiblesTab({ derived }) {
       <div className="coll-list">
         {filtered.map(c => (
           <a key={c.id} className={`coll-row ${c.seen ? 'seen' : 'missing'}`}
-             href={wikiUrl(c.name)} target="_blank" rel="noopener noreferrer">
+             href={collWikiUrl(c.id, c.name)} target="_blank" rel="noopener noreferrer">
             <div className="coll-row-icon">
               <img src={collIconUrl(c.name)} alt="" loading="lazy"
                    onError={e => { e.currentTarget.style.visibility = 'hidden'; }} />

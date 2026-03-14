@@ -192,6 +192,7 @@ body {
 }
 .btn-primary:hover  { filter: brightness(1.18); border-color: rgba(210,150,60,0.75); }
 .btn-secondary:hover { filter: brightness(1.15); border-color: rgba(160,100,40,0.65); }
+.reset-row { text-align: center; margin-top: 32px; }
 
 /* ── Steam loader (DropZone) ─────────────────────────────────── */
 
@@ -1046,10 +1047,34 @@ body {
 
 /* ── Scrollbar ───────────────────────────────────────────────── */
 
+/* Firefox */
+* { scrollbar-width: thin; scrollbar-color: rgba(200,140,50,0.25) var(--bg-deep); } /* rgba intentionnel : 25% opacité sur --color-gold */
+/* Webkit */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-deep); }
 ::-webkit-scrollbar-thumb { background: rgba(200,140,50,0.25); border-radius: 1px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(200,140,50,0.45); }
+
+/* ── Responsive tablet ───────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .missing-grid {
+    grid-template-columns: 1fr;
+  }
+  .char-marks-grid-outer {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+  .tab-btn {
+    padding: 8px 12px;
+    font-size: 0.65rem;
+  }
+  .dlc-progress-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
 /* ── Responsive mobile ───────────────────────────────────────── */
 

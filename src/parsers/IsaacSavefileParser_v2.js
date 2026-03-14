@@ -36,8 +36,7 @@ class IsaacSavefileParserV2 {
 
       const chunks = {};
 
-      for (let i = 0; i < 11; i++) {
-        if (offset + 12 > buffer.byteLength) break;
+      while (offset + 12 <= buffer.byteLength) {
 
         const type = view.getUint32(offset, true);
         if (type < 1 || type > 11) break;
@@ -122,6 +121,9 @@ class IsaacSavefileParserV2 {
       const subType  = view.getUint32(pos, true);
       const subBytes = view.getUint32(pos + 4, true);
       pos += 8;
+
+      // Guard against malformed subBytes that would read past the buffer
+      if (subBytes > safeEnd - pos) break;
 
       const entries = [];
       const subEnd = Math.min(pos + subBytes, safeEnd);

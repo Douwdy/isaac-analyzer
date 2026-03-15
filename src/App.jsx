@@ -310,7 +310,7 @@ function App() {
 
         <footer className="app-footer">
           <a className="feedback-btn" href="https://forms.gle/JWKjpy9N7GYkptPGA" target="_blank" rel="noopener noreferrer">{t.feedback}</a>
-          <span className="version-badge">Dead God Tracker - v1.3.1</span>
+          <span className="version-badge">Dead God Tracker - v1.3.2</span>
           <span className="footer-copy">© {new Date().getFullYear()} Dead God Tracker — not affiliated with Nicalis or Edmund McMillen</span>
         </footer>
       </div>
@@ -702,18 +702,18 @@ function MissingHighlights({ derived }) {
 
   return (
     <div className="missing-grid">
-      <MissingBucket title={t.bucketChallenges(missingChallenges.length)} color="var(--color-red)" defaultOpen={missingChallenges.length > 0 && missingChallenges.length <= 15}>
+      <MissingBucket title={t.bucketChallenges(missingChallenges.length)} color="var(--color-red)">
         {missingChallenges.length === 0
           ? <li className="bucket-all-done">{t.bucketAllDone}</li>
           : missingChallenges.map(c => <li key={c.id}><a href={challengeWikiUrl(c.id, c.name)} target="_blank" rel="noopener noreferrer">#{c.id} {c.name}</a></li>)}
       </MissingBucket>
-      <MissingBucket title={t.bucketMarks(buckets.Marks.length)} color="var(--color-teal)" defaultOpen={buckets.Marks.length > 0 && buckets.Marks.length <= 20}>
+      <MissingBucket title={t.bucketMarks(buckets.Marks.length)} color="var(--color-teal)">
         {buckets.Marks.length === 0
           ? <li className="bucket-all-done">{t.bucketAllDone}</li>
           : buckets.Marks.map(a => <li key={a.id} title={a.unlockDescription}><a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">{a.unlockDescription || a.name}</a></li>)
         }
       </MissingBucket>
-      <MissingBucket title={t.bucketItems(buckets.Items.length)} color="var(--color-purple)" defaultOpen={false}>
+      <MissingBucket title={t.bucketItems(buckets.Items.length)} color="var(--color-purple)">
         {buckets.Items.length === 0
           ? <li className="bucket-all-done">{t.bucketAllDone}</li>
           : buckets.Items.map(a => {
@@ -726,7 +726,7 @@ function MissingHighlights({ derived }) {
             );
           })}
       </MissingBucket>
-      <MissingBucket title={t.bucketOther(buckets.Other.length)} color="var(--color-gold)" defaultOpen={false}>
+      <MissingBucket title={t.bucketOther(buckets.Other.length)} color="var(--color-gold)">
         {buckets.Other.length === 0
           ? <li className="bucket-all-done">{t.bucketAllDone}</li>
           : buckets.Other.map(a => <li key={a.id} title={a.unlockDescription}><a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">#{a.id} {a.name}</a></li>)}
@@ -735,15 +735,11 @@ function MissingHighlights({ derived }) {
   );
 }
 
-function MissingBucket({ title, color, children, defaultOpen = true }) {
-  const [open, setOpen] = useState(defaultOpen);
+function MissingBucket({ title, color, children }) {
   return (
     <div className="missing-bucket" style={{ '--bucket-color': color }}>
-      <button className="bucket-toggle" onClick={() => setOpen(o => !o)} aria-expanded={open}>
-        <span>{title}</span>
-        <span>{open ? '▲' : '▼'}</span>
-      </button>
-      {open && <ul className="bucket-list">{children}</ul>}
+      <div className="bucket-header">{title}</div>
+      <ul className="bucket-list">{children}</ul>
     </div>
   );
 }
@@ -1029,18 +1025,11 @@ function CharacterMarksCard({ char, unlockedIds }) {
 const COLL_KIND_BY_ID = new Map();
 const ITEM_UNLOCK_BY_ID = new Map();
 for (const i of itemsDB) {
-  if (i.item_id == null) continue;
+  if (i.item_id == null || (i.kind !== 'passive' && i.kind !== 'active')) continue;
   ITEM_UNLOCK_BY_ID.set(i.item_id, { unlockCondition: i.unlock_condition, achievementId: i.achievement_id });
-  if (i.kind === 'passive' || i.kind === 'active') COLL_KIND_BY_ID.set(i.item_id, i.kind);
+  COLL_KIND_BY_ID.set(i.item_id, i.kind);
 }
 
-// collectible id → wiki path, derived via items_db achievement_id → achievements → achievementWikiLinks
-const COLL_WIKI_BY_ID = Object.fromEntries(
-  itemsDB
-    .filter(i => i.achievement_id != null && i.item_id != null && (i.kind === 'passive' || i.kind === 'active'))
-    .map(i => [i.item_id, achievementWikiLinks[achievementsData[String(i.achievement_id)]?.name]])
-    .filter(([, link]) => link)
-);
 
 // Items where collectibles.json name ≠ wiki image filename
 const COLL_ICON_FILENAME = {
@@ -1114,9 +1103,7 @@ function collIconUrl(name) {
 
 
 function collWikiUrl(id, name) {
-  // 1. Achievement-derived link (most accurate — crosses collectibleUnlocks → achievements → achievementWikiLinks)
-  if (COLL_WIKI_BY_ID[id]) return WIKI_BASE + COLL_WIKI_BY_ID[id];
-  // 2. Same name correction map used for icons (wiki page names match icon filenames)
+  // 1. Same name correction map used for icons (wiki page names match icon filenames)
   const override = COLL_ICON_FILENAME[name];
   if (override) {
     const pageName = override.replace(/'/g, '%27').replace(/!/g, '%21');

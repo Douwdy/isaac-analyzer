@@ -496,15 +496,12 @@ body {
   border-left: 3px solid var(--bucket-color, var(--color-gold));
   overflow: hidden;
 }
-.bucket-toggle {
-  width: 100%; background: none; border: none;
+.bucket-header {
   padding: 9px 12px; color: var(--text-bright);
-  font-family: inherit; font-size: 0.68rem; font-weight: 600;
+  font-family: 'Upheaval', sans-serif; font-size: 0.75rem;
   letter-spacing: 1.5px; text-transform: uppercase;
-  cursor: pointer; display: flex; justify-content: space-between; align-items: center;
   border-bottom: 1px solid rgba(200,140,50,0.08);
 }
-.bucket-toggle:hover { background: var(--bg-panel2); }
 .bucket-list {
   list-style: none; padding: 4px 0;
   max-height: 220px; overflow-y: auto;

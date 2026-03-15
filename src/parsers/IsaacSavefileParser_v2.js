@@ -49,11 +49,13 @@ class IsaacSavefileParserV2 {
         const isCounter = COUNTER_TYPES.has(type);
         const dataBytes = F1_ADVANCE_TYPES.has(type) ? f1 : count;
 
-        chunks[type] = {
-          type,
-          count,
-          data: this.parseChunkData(view, type, dataOffset, count, dataBytes, buffer.byteLength),
-        };
+        if (!chunks[type]) {
+          chunks[type] = {
+            type,
+            count,
+            data: this.parseChunkData(view, type, dataOffset, count, dataBytes, buffer.byteLength),
+          };
+        }
 
         offset += 12 + dataBytes;
       }

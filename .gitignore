@@ -35,9 +35,9 @@ tmp/
 
 # Root-level data folder (leftover, app uses src/data/)
 /data/
-
 # Generated — rebuilt by `node build_items_db.mjs`
 src/data/items_db.json
+src/temp/
 
 # Template docs not needed for the project
 CONTRIBUTING.md

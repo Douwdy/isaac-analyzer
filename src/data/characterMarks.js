@@ -182,119 +182,119 @@ export const CHARACTERS = [
   // ─── Tainted (17-33) ─────────────────────────────────────────────────────
 
   {
-    id: 17, key: 't_isaac', name: 'T. Isaac', tainted: true, unlockAchId: 167,
+    id: 17, key: 't_isaac', name: 'T. Isaac', tainted: true, unlockAchId: 474,
     marks: {
       four_bosses: 548, mother: 549, beast: 491, mega_satan: 601,
       hush_boss_rush: 618, ultra_greedier: 541, delirium: 584,
     },
   },
   {
-    id: 18, key: 't_magdalene', name: 'T. Magdalene', tainted: true, unlockAchId: 168,
+    id: 18, key: 't_magdalene', name: 'T. Magdalene', tainted: true, unlockAchId: 475,
     marks: {
       four_bosses: 550, mother: 551, beast: 492, mega_satan: 602,
       hush_boss_rush: 619, ultra_greedier: 530, delirium: 585,
     },
   },
   {
-    id: 19, key: 't_cain', name: 'T. Cain', tainted: true, unlockAchId: 171,
+    id: 19, key: 't_cain', name: 'T. Cain', tainted: true, unlockAchId: 476,
     marks: {
       four_bosses: 552, mother: 553, beast: 493, mega_satan: 603,
       hush_boss_rush: 620, ultra_greedier: 534, delirium: 586,
     },
   },
   {
-    id: 20, key: 't_judas', name: 'T. Judas', tainted: true, unlockAchId: 170,
+    id: 20, key: 't_judas', name: 'T. Judas', tainted: true, unlockAchId: 477,
     marks: {
       four_bosses: 554, mother: 555, beast: 494, mega_satan: 604,
       hush_boss_rush: 621, ultra_greedier: 525, delirium: 587,
     },
   },
   {
-    id: 21, key: 't_blue_baby', name: 'T. ???', tainted: true, unlockAchId: 174,
+    id: 21, key: 't_blue_baby', name: 'T. ???', tainted: true, unlockAchId: 478,
     marks: {
       four_bosses: 556, mother: 557, beast: 495, mega_satan: 605,
       hush_boss_rush: 622, ultra_greedier: 528, delirium: 588,
     },
   },
   {
-    id: 22, key: 't_eve', name: 'T. Eve', tainted: true, unlockAchId: 169,
+    id: 22, key: 't_eve', name: 'T. Eve', tainted: true, unlockAchId: 479,
     marks: {
       four_bosses: 558, mother: 559, beast: 496, mega_satan: 606,
       hush_boss_rush: 623, ultra_greedier: 527, delirium: 589,
     },
   },
   {
-    id: 23, key: 't_samson', name: 'T. Samson', tainted: true, unlockAchId: 177,
+    id: 23, key: 't_samson', name: 'T. Samson', tainted: true, unlockAchId: 480,
     marks: {
       four_bosses: 560, mother: 561, beast: 497, mega_satan: 607,
       hush_boss_rush: 624, ultra_greedier: 535, delirium: 590,
     },
   },
   {
-    id: 24, key: 't_azazel', name: 'T. Azazel', tainted: true, unlockAchId: 172,
+    id: 24, key: 't_azazel', name: 'T. Azazel', tainted: true, unlockAchId: 481,
     marks: {
       four_bosses: 562, mother: 563, beast: 498, mega_satan: 608,
       hush_boss_rush: 625, ultra_greedier: 539, delirium: 591,
     },
   },
   {
-    id: 25, key: 't_lazarus', name: 'T. Lazarus', tainted: true, unlockAchId: 173,
+    id: 25, key: 't_lazarus', name: 'T. Lazarus', tainted: true, unlockAchId: 482,
     marks: {
       four_bosses: 564, mother: 565, beast: 499, mega_satan: 609,
       hush_boss_rush: 626, ultra_greedier: 543, delirium: 592,
     },
   },
   {
-    id: 26, key: 't_eden', name: 'T. Eden', tainted: true, unlockAchId: 176,
+    id: 26, key: 't_eden', name: 'T. Eden', tainted: true, unlockAchId: 483,
     marks: {
       four_bosses: 566, mother: 567, beast: 500, mega_satan: 610,
       hush_boss_rush: 627, ultra_greedier: 544, delirium: 593,
     },
   },
   {
-    id: 27, key: 't_lost', name: 'T. Lost', tainted: true, unlockAchId: 175,
+    id: 27, key: 't_lost', name: 'T. Lost', tainted: true, unlockAchId: 484,
     marks: {
       four_bosses: 568, mother: 569, beast: 501, mega_satan: 611,
       hush_boss_rush: 628, ultra_greedier: 524, delirium: 594,
     },
   },
   {
-    id: 28, key: 't_lilith', name: 'T. Lilith', tainted: true, unlockAchId: 223,
+    id: 28, key: 't_lilith', name: 'T. Lilith', tainted: true, unlockAchId: 485,
     marks: {
       four_bosses: 570, mother: 571, beast: 502, mega_satan: 612,
       hush_boss_rush: 629, ultra_greedier: 526, delirium: 595,
     },
   },
   {
-    id: 29, key: 't_keeper', name: 'T. Keeper', tainted: true, unlockAchId: 241,
+    id: 29, key: 't_keeper', name: 'T. Keeper', tainted: true, unlockAchId: 486,
     marks: {
       four_bosses: 572, mother: 573, beast: 503, mega_satan: 613,
       hush_boss_rush: 630, ultra_greedier: 536, delirium: 596,
     },
   },
   {
-    id: 30, key: 't_apollyon', name: 'T. Apollyon', tainted: true, unlockAchId: 318,
+    id: 30, key: 't_apollyon', name: 'T. Apollyon', tainted: true, unlockAchId: 487,
     marks: {
       four_bosses: 574, mother: 575, beast: 504, mega_satan: 614,
       hush_boss_rush: 631, ultra_greedier: 540, delirium: 597,
     },
   },
   {
-    id: 31, key: 't_forgotten', name: 'T. Forgotten', tainted: true, unlockAchId: 392,
+    id: 31, key: 't_forgotten', name: 'T. Forgotten', tainted: true, unlockAchId: 488,
     marks: {
       four_bosses: 576, mother: 577, beast: 505, mega_satan: 615,
       hush_boss_rush: 632, ultra_greedier: 537, delirium: 598,
     },
   },
   {
-    id: 32, key: 't_bethany', name: 'T. Bethany', tainted: true, unlockAchId: 416,
+    id: 32, key: 't_bethany', name: 'T. Bethany', tainted: true, unlockAchId: 489,
     marks: {
       four_bosses: 578, mother: 579, beast: 506, mega_satan: 616,
       hush_boss_rush: 633, ultra_greedier: 529, delirium: 599,
     },
   },
   {
-    id: 33, key: 't_jacob', name: 'T. Jacob', tainted: true, unlockAchId: 428,
+    id: 33, key: 't_jacob', name: 'T. Jacob', tainted: true, unlockAchId: 490,
     marks: {
       four_bosses: 580, mother: 581, beast: 507, mega_satan: 617,
       hush_boss_rush: 634, ultra_greedier: 542, delirium: 600,

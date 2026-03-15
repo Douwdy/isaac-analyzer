@@ -310,7 +310,7 @@ function App() {
 
         <footer className="app-footer">
           <a className="feedback-btn" href="https://forms.gle/JWKjpy9N7GYkptPGA" target="_blank" rel="noopener noreferrer">{t.feedback}</a>
-          <span className="version-badge">Dead God Tracker - v1.2.2</span>
+          <span className="version-badge">Dead God Tracker - v1.3.0</span>
           <span className="footer-copy">© {new Date().getFullYear()} Dead God Tracker — not affiliated with Nicalis or Edmund McMillen</span>
         </footer>
       </div>
@@ -705,7 +705,7 @@ function MissingHighlights({ derived }) {
       <MissingBucket title={t.bucketChallenges(missingChallenges.length)} color="var(--color-red)" defaultOpen={missingChallenges.length > 0 && missingChallenges.length <= 15}>
         {missingChallenges.length === 0
           ? <li className="bucket-all-done">{t.bucketAllDone}</li>
-          : missingChallenges.map(c => <li key={c.id}><a href={challengeWikiUrl(c.name)} target="_blank" rel="noopener noreferrer">#{c.id} {c.name}</a></li>)}
+          : missingChallenges.map(c => <li key={c.id}><a href={challengeWikiUrl(c.id, c.name)} target="_blank" rel="noopener noreferrer">#{c.id} {c.name}</a></li>)}
       </MissingBucket>
       <MissingBucket title={t.bucketMarks(buckets.Marks.length)} color="var(--color-teal)" defaultOpen={buckets.Marks.length > 0 && buckets.Marks.length <= 20}>
         {buckets.Marks.length === 0
@@ -773,12 +773,17 @@ function AchievementsTab({ derived }) {
   const t = useLang();
   const { achievementsList } = derived;
   const [filter, setFilter] = useState('locked');
+  const [search, setSearch] = useState('');
 
-  const filtered = useMemo(() => achievementsList.filter(a => {
-    if (filter === 'locked')   return !a.unlocked;
-    if (filter === 'unlocked') return a.unlocked;
-    return true;
-  }), [achievementsList, filter]);
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return achievementsList.filter(a => {
+      if (filter === 'locked'   && a.unlocked)  return false;
+      if (filter === 'unlocked' && !a.unlocked) return false;
+      if (!q) return true;
+      return a.name.toLowerCase().includes(q) || a.unlockDescription?.toLowerCase().includes(q);
+    });
+  }, [achievementsList, filter, search]);
 
   return (
     <div>
@@ -788,6 +793,12 @@ function AchievementsTab({ derived }) {
             {label}
           </button>
         ))}
+        <input
+          className="coll-search-input"
+          placeholder={t.collSearch}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
         <span className="filter-count">{t.achievementCount(filtered.length)}</span>
         <a className="tips-btn" href="https://bindingofisaacrebirth.wiki.gg/wiki/Achievement_Tips" target="_blank" rel="noopener noreferrer">{t.achievementTips}</a>
       </div>

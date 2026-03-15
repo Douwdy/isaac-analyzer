@@ -8,12 +8,20 @@ export default defineConfig({
     port: 3000,
     open: true
   },
+  esbuild: {
+    drop: ['console'],
+  },
   build: {
     outDir: 'dist',
     sourcemap: false,
     minify: 'esbuild',
-    esbuildOptions: {
-      drop: ['console'],
-    }
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) return 'vendor';
+          if (id.includes('/src/data/'))   return 'data';
+        },
+      },
+    },
   }
 })

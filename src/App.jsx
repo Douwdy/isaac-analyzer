@@ -3,12 +3,9 @@ import IsaacSavefileParserV2 from './parsers/IsaacSavefileParser_v2.js';
 import achievementsData from './data/achievements.json';
 import { CHARACTERS, BOSS_LABELS, NORMAL_MARK_KEYS, TAINTED_MARK_KEYS } from './data/characterMarks.js';
 import collectiblesData from './data/collectibles.json';
-import collectibleUnlocks from './data/collectibleUnlocks.json';
 import itemsDB from './data/items_db.json';
 import achievementWikiLinks from './data/achievementWikiLinks.json';
-import challengeWikiLinks from './data/challengeWikiLinks.json';
-import { CHALLENGE_REWARDS } from './data/challengeRewards.js';
-import { CHALLENGE_ACH } from './data/challengeAchievements.js';
+import { CHALLENGE_DATA } from './data/challengeData.js';
 import bossesData from './data/bosses.json';
 import { translations } from './data/translations.js';
 import headerLogo from './assets/sprites/headerlogo.png';
@@ -111,8 +108,8 @@ function useLang() { return translations[useContext(LangContext)]; }
 const WIKI_BASE = 'https://bindingofisaacrebirth.wiki.gg';
 const wikiUrl = name =>
   WIKI_BASE + (achievementWikiLinks[name] ?? `/wiki/${encodeURIComponent(name.replace(/ /g, '_'))}`);
-const challengeWikiUrl = name =>
-  WIKI_BASE + (challengeWikiLinks[name] ?? `/wiki/${encodeURIComponent(name.replace(/ /g, '_'))}`);
+const challengeWikiUrl = (id, name) =>
+  WIKI_BASE + (CHALLENGE_DATA[id]?.wikiPath ?? `/wiki/${encodeURIComponent(name.replace(/ /g, '_'))}`);
 
 // ─── Données statiques ────────────────────────────────────────────────────────
 
@@ -561,7 +558,7 @@ function computeSteamDerived({ unlockedIds, steamId, displayId }) {
   const collTotal = Object.keys(collectiblesData).filter(k => parseInt(k) >= 1).length;
   const challenges = CHALLENGE_NAMES.map((name, idx) => {
     const id = idx + 1;
-    const achId = CHALLENGE_ACH[id];
+    const achId = CHALLENGE_DATA[id]?.achievementId;
     return { id, name, done: achId != null ? unlockedIds.has(achId) : false };
   });
   return {
@@ -684,7 +681,7 @@ function OverviewTab({ derived }) {
 const MARK_ACH_IDS = new Set(
   CHARACTERS.flatMap(char => Object.values(char.marks).filter(id => id != null))
 );
-const CHALLENGE_ACH_IDS = new Set(Object.values(CHALLENGE_ACH));
+const CHALLENGE_ACH_IDS = new Set(Object.values(CHALLENGE_DATA).map(d => d.achievementId).filter(Boolean));
 // Achievement ID → item kind (pour badge d'affichage + bucket Items dans MissingHighlights)
 const ITEM_KIND_BY_ACH = new Map(
   itemsDB.filter(i => i.achievement_id != null).map(i => [i.achievement_id, i.kind])
@@ -858,7 +855,7 @@ function ChallengesTab({ derived }) {
       </div>
       <div className="challenge-list">
         {challenges.map(c => {
-          const rwd = CHALLENGE_REWARDS[c.id];
+          const rwd = CHALLENGE_DATA[c.id];
           const revealReward = c.done || revealed.has(c.id);
           return (
             <div key={c.id} className={`challenge-row ${c.done ? 'done' : 'todo'}`}>
@@ -870,7 +867,7 @@ function ChallengesTab({ derived }) {
                 }
               </div>
               <div className="chall-info">
-                <a className="chall-main-link" href={challengeWikiUrl(c.name)} target="_blank" rel="noopener noreferrer">
+                <a className="chall-main-link" href={challengeWikiUrl(c.id, c.name)} target="_blank" rel="noopener noreferrer">
                   <span className="chall-status-icon">{c.done ? '✓' : '✗'}</span>
                   <span className="chall-id">#{c.id}</span>
                   <span className="chall-name">{c.name}</span>
@@ -1026,10 +1023,11 @@ for (const i of itemsDB) {
   if (i.kind === 'passive' || i.kind === 'active') COLL_KIND_BY_ID.set(i.item_id, i.kind);
 }
 
-// collectible id → wiki path, derived by crossing collectibleUnlocks → achievements → achievementWikiLinks
+// collectible id → wiki path, derived via items_db achievement_id → achievements → achievementWikiLinks
 const COLL_WIKI_BY_ID = Object.fromEntries(
-  Object.entries(collectibleUnlocks)
-    .map(([collId, achId]) => [parseInt(collId), achievementWikiLinks[achievementsData[String(achId)]?.name]])
+  itemsDB
+    .filter(i => i.achievement_id != null && i.item_id != null && (i.kind === 'passive' || i.kind === 'active'))
+    .map(i => [i.item_id, achievementWikiLinks[achievementsData[String(i.achievement_id)]?.name]])
     .filter(([, link]) => link)
 );
 

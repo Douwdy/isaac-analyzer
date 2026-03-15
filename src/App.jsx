@@ -7,28 +7,28 @@ import itemsDB from './data/items_db.json';
 import achievementWikiLinks from './data/achievementWikiLinks.json';
 import { CHALLENGE_DATA } from './data/challengeData.js';
 import { translations } from './data/translations.js';
-import headerLogo from './assets/sprites/headerlogo.webp';
-import iconBoss         from './assets/sprites/icon/boss.webp';
-import iconAchievement  from './assets/sprites/icon/achievement.webp';
-import iconChallenges   from './assets/sprites/icon/challenges.webp';
-import iconCollectables from './assets/sprites/icon/collectables.webp';
-import iconCharacter    from './assets/sprites/icon/character.webp';
-import iconOverview     from './assets/sprites/icon/overview.webp';
-import iconTainted      from './assets/sprites/icon/tainted.webp';
-import iconLocked       from './assets/sprites/icon/locked.webp';
-import iconSteam        from './assets/sprites/icon/steam.webp';
 import './styles/App.css';
 
-// ─── Sprite assets (loaded eagerly via Vite glob) ─────────────────────────────
-const charSpriteModules       = import.meta.glob('./assets/sprites/characters/*.webp',  { eager: true });
-const completionSpriteModules = import.meta.glob('./assets/sprites/completion/*.webp',  { eager: true });
-const achSpriteModules        = import.meta.glob('./assets/sprites/achievements/*.webp', { eager: true });
-const itemSpriteModules       = import.meta.glob('./assets/sprites/items/*.webp',        { eager: true });
-const challengeSpriteModules  = import.meta.glob('./assets/sprites/challenges/*.webp',   { eager: true });
+// ─── Sprite URL helpers (served from /public/sprites/ — no bundling overhead) ─
+const S = {
+  icon:        f => `/sprites/icon/${f}`,
+  char:        f => `/sprites/characters/${f}`,
+  completion:  f => `/sprites/completion/${f}`,
+  achievement: f => `/sprites/achievements/${f}`,
+  item:        f => `/sprites/items/${f}`,
+  challenge:   f => `/sprites/challenges/${f}`,
+};
 
-const achSprites       = Object.fromEntries(Object.entries(achSpriteModules).map(([p, m])       => [p.split('/').pop(), m.default]));
-const itemSprites      = Object.fromEntries(Object.entries(itemSpriteModules).map(([p, m])      => [p.split('/').pop(), m.default]));
-const challengeSprites = Object.fromEntries(Object.entries(challengeSpriteModules).map(([p, m]) => [p.split('/').pop(), m.default]));
+const headerLogo      = '/sprites/headerlogo.webp';
+const iconBoss         = S.icon('boss.webp');
+const iconAchievement  = S.icon('achievement.webp');
+const iconChallenges   = S.icon('challenges.webp');
+const iconCollectables = S.icon('collectables.webp');
+const iconCharacter    = S.icon('character.webp');
+const iconOverview     = S.icon('overview.webp');
+const iconTainted      = S.icon('tainted.webp');
+const iconLocked       = S.icon('locked.webp');
+const iconSteam        = S.icon('steam.webp');
 
 // character key → filename
 const CHAR_SPRITE_FILE = {
@@ -94,16 +94,16 @@ const MARK_SPRITE_FILE = {
 
 function getCharSprite(key) {
   const file = CHAR_SPRITE_FILE[key];
-  return file ? charSpriteModules[`./assets/sprites/characters/${file}`]?.default ?? null : null;
+  return file ? S.char(file) : null;
 }
 function getTaintedCharSprite(key) {
   const baseKey = key.startsWith('t_') ? key.slice(2) : key;
   const file = CHAR_T_SPRITE_FILE[baseKey];
-  return file ? charSpriteModules[`./assets/sprites/characters/${file}`]?.default ?? null : null;
+  return file ? S.char(file) : null;
 }
 function getMarkSprite(markKey) {
   const file = MARK_SPRITE_FILE[markKey];
-  return file ? completionSpriteModules[`./assets/sprites/completion/${file}`]?.default ?? null : null;
+  return file ? S.completion(file) : null;
 }
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
@@ -753,7 +753,7 @@ const ACH_ICON_FILENAME = {
 function achIconUrl(name) {
   const override = ACH_ICON_FILENAME[name];
   const filename = override ?? name.replace(/ /g, '_').replace(/\?/g, '%3F');
-  return achSprites[`Achievement_${filename}_icon.webp`];
+  return S.achievement(`Achievement_${filename}_icon.webp`);
 }
 
 function AchievementsTab({ derived }) {
@@ -859,7 +859,7 @@ function ChallengesTab({ derived }) {
             <div key={c.id} className={`challenge-row ${c.done ? 'done' : 'todo'}`}>
               <div className={`chall-reward-icon${revealReward ? '' : ' hidden'}`}>
                 {rwd?.icon
-                  ? <img src={challengeSprites[rwd.icon]} alt={rwd.reward} loading="lazy"
+                  ? <img src={S.challenge(rwd.icon)} alt={rwd.reward} loading="lazy"
                          onError={e => { e.currentTarget.style.display = 'none'; }} />
                   : <span className="chall-reward-mystery">?</span>
                 }
@@ -1085,7 +1085,7 @@ function encodeItemName(name) {
 function collIconUrl(name) {
   const override = COLL_ICON_FILENAME[name];
   const filename = override ?? encodeItemName(name);
-  return itemSprites[`Collectible_${filename}_icon.webp`];
+  return S.item(`Collectible_${filename}_icon.webp`);
 }
 
 

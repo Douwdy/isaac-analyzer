@@ -34,7 +34,10 @@ tmp/
 .claude/
 
 # Root-level data folder (leftover, app uses src/data/)
-data/
+/data/
+
+# Generated — rebuilt by `node build_items_db.mjs`
+src/data/items_db.json
 
 # Template docs not needed for the project
 CONTRIBUTING.md

@@ -4,6 +4,7 @@ import achievementsData from './data/achievements.json';
 import { CHARACTERS, BOSS_LABELS, NORMAL_MARK_KEYS, TAINTED_MARK_KEYS } from './data/characterMarks.js';
 import collectiblesData from './data/collectibles.json';
 import collectibleUnlocks from './data/collectibleUnlocks.json';
+import itemsDB from './data/items_db.json';
 import achievementWikiLinks from './data/achievementWikiLinks.json';
 import challengeWikiLinks from './data/challengeWikiLinks.json';
 import { CHALLENGE_REWARDS } from './data/challengeRewards.js';
@@ -684,8 +685,10 @@ const MARK_ACH_IDS = new Set(
   CHARACTERS.flatMap(char => Object.values(char.marks).filter(id => id != null))
 );
 const CHALLENGE_ACH_IDS = new Set(Object.values(CHALLENGE_ACH));
-// Achievement IDs that unlock a collectible (reverse of collectibleUnlocks)
-const COLL_UNLOCK_ACH_IDS = new Set(Object.values(collectibleUnlocks));
+// Achievement ID → item kind (pour badge d'affichage + bucket Items dans MissingHighlights)
+const ITEM_KIND_BY_ACH = new Map(
+  itemsDB.filter(i => i.achievement_id != null).map(i => [i.achievement_id, i.kind])
+);
 
 function MissingHighlights({ derived }) {
   const t = useLang();
@@ -696,7 +699,7 @@ function MissingHighlights({ derived }) {
   for (const a of lockedAchievements) {
     if (MARK_ACH_IDS.has(a.id))        buckets.Marks.push(a);
     else if (CHALLENGE_ACH_IDS.has(a.id)) buckets.Challenges.push(a);
-    else if (COLL_UNLOCK_ACH_IDS.has(a.id)) buckets.Items.push(a);
+    else if (ITEM_KIND_BY_ACH.has(a.id)) buckets.Items.push(a);
     else buckets.Other.push(a);
   }
 
@@ -716,7 +719,15 @@ function MissingHighlights({ derived }) {
       <MissingBucket title={t.bucketItems(buckets.Items.length)} color="var(--color-purple)" defaultOpen={false}>
         {buckets.Items.length === 0
           ? <li className="bucket-all-done">{t.bucketAllDone}</li>
-          : buckets.Items.map(a => <li key={a.id} title={a.unlockDescription}><a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">#{a.id} {a.name}</a></li>)}
+          : buckets.Items.map(a => {
+            const kind = ITEM_KIND_BY_ACH.get(a.id);
+            return (
+              <li key={a.id} title={a.unlockDescription}>
+                <a href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">{a.name}</a>
+                {kind && <span className="item-kind-tag">{kind}</span>}
+              </li>
+            );
+          })}
       </MissingBucket>
       <MissingBucket title={t.bucketOther(buckets.Other.length)} color="var(--color-gold)" defaultOpen={false}>
         {buckets.Other.length === 0
@@ -1005,6 +1016,16 @@ function CharacterMarksCard({ char, unlockedIds }) {
 
 // ─── Collectibles tab ─────────────────────────────────────────────────────────
 
+// item_id → kind (passifs/actifs uniquement) + item_id → unlock info — single pass
+// (trinkets/consommables ont des item_id qui se chevauchent avec passifs/actifs, donc filtre par kind pour COLL_KIND_BY_ID)
+const COLL_KIND_BY_ID = new Map();
+const ITEM_UNLOCK_BY_ID = new Map();
+for (const i of itemsDB) {
+  if (i.item_id == null) continue;
+  ITEM_UNLOCK_BY_ID.set(i.item_id, { unlockCondition: i.unlock_condition, achievementId: i.achievement_id });
+  if (i.kind === 'passive' || i.kind === 'active') COLL_KIND_BY_ID.set(i.item_id, i.kind);
+}
+
 // collectible id → wiki path, derived by crossing collectibleUnlocks → achievements → achievementWikiLinks
 const COLL_WIKI_BY_ID = Object.fromEntries(
   Object.entries(collectibleUnlocks)
@@ -1060,13 +1081,10 @@ const COLL_ICON_FILENAME = {
   'Glowing Hour Glass':           'Glowing_Hourglass',
 };
 
-function collIconUrl(name) {
-  const override = COLL_ICON_FILENAME[name];
-  if (override) return `https://bindingofisaacrebirth.wiki.gg/images/Collectible_${override}_icon.png`;
-  let filename = name;
+function encodeItemName(name) {
   // "Lil' X" → "Lil_X": wiki drops the apostrophe for all Lil' family items
-  filename = filename.replace(/^Lil' /, 'Lil_');
-  filename = filename
+  return name
+    .replace(/^Lil' /, 'Lil_')
     .replace(/ /g, '_')
     .replace(/\$/g, '%24')
     .replace(/#/g,  '%23')
@@ -1077,8 +1095,14 @@ function collIconUrl(name) {
     .replace(/!/g,  '%21')
     .replace(/\+/g, '%2B');
   // Apostrophes are kept literal — the wiki uses them as-is in filenames
-  return `https://bindingofisaacrebirth.wiki.gg/images/Collectible_${filename}_icon.png`;
 }
+
+function collIconUrl(name) {
+  const override = COLL_ICON_FILENAME[name];
+  if (override) return `https://bindingofisaacrebirth.wiki.gg/images/Collectible_${override}_icon.png`;
+  return `https://bindingofisaacrebirth.wiki.gg/images/Collectible_${encodeItemName(name)}_icon.png`;
+}
+
 
 function collWikiUrl(id, name) {
   // 1. Achievement-derived link (most accurate — crosses collectibleUnlocks → achievements → achievementWikiLinks)
@@ -1120,14 +1144,16 @@ function CollectiblesTab({ derived }) {
       .map(([id, name]) => {
         const numId = parseInt(id);
         const seen = !missedSet.has(numId);
-        const requiredAch = collectibleUnlocks[id];
-        const unlocked = requiredAch == null || unlockedIds.has(requiredAch);
+        const dbItem = ITEM_UNLOCK_BY_ID.get(numId);
+        const unlocked = dbItem == null
+          || dbItem.unlockCondition === null
+          || (dbItem.achievementId != null && unlockedIds.has(dbItem.achievementId));
         return { id: numId, name, seen, unlocked };
       })
       .sort((a, b) => a.id - b.id)
       .filter(c => {
-        if (filter === 'missing')         return !c.seen;
-        if (filter === 'found')           return c.seen;
+        if (filter === 'missing')          return !c.seen;
+        if (filter === 'found')            return c.seen;
         if (filter === 'unlocked_missing') return !c.seen && c.unlocked;
         return true;
       })
@@ -1168,18 +1194,22 @@ function CollectiblesTab({ derived }) {
       </div>
 
       <div className="coll-list">
-        {filtered.map(c => (
-          <a key={c.id} className={`coll-row ${c.seen ? 'seen' : 'missing'}`}
-             href={collWikiUrl(c.id, c.name)} target="_blank" rel="noopener noreferrer">
-            <div className="coll-row-icon">
-              <img src={collIconUrl(c.name)} alt="" loading="lazy"
-                   onError={e => { e.currentTarget.style.visibility = 'hidden'; }} />
-            </div>
-            <span className="coll-row-id">#{c.id}</span>
-            <span className="coll-row-name">{c.name}</span>
-            <span className="coll-row-status">{c.seen ? '✓' : '✗'}</span>
-          </a>
-        ))}
+        {filtered.map(c => {
+          const kind = COLL_KIND_BY_ID.get(c.id);
+          return (
+            <a key={c.id} className={`coll-row ${c.seen ? 'seen' : 'missing'}`}
+               href={collWikiUrl(c.id, c.name)} target="_blank" rel="noopener noreferrer">
+              <div className="coll-row-icon">
+                <img src={collIconUrl(c.name)} alt="" loading="lazy"
+                     onError={e => { e.currentTarget.style.visibility = 'hidden'; }} />
+              </div>
+              <span className="coll-row-id">#{c.id}</span>
+              <span className="coll-row-name">{c.name}</span>
+              {kind && <span className="item-kind-tag">{kind}</span>}
+              <span className="coll-row-status">{c.seen ? '✓' : '✗'}</span>
+            </a>
+          );
+        })}
       </div>
     </div>
   );

@@ -16,7 +16,6 @@ export const translations = {
     tabChallenges:    'Challenges',
     tabCharacters:    'Characters',
     tabCollectibles:  'Items',
-    tabBosses:        'Bosses',
     // dead god bar
     deadGodTitle:     'Dead God Progress',
     deadGodUnlocked:  '✓ UNLOCKED',
@@ -53,8 +52,6 @@ export const translations = {
     filterTainted:    'Tainted',
     filterIncomplete: 'Incomplete',
     characterCount:   n => `${n} characters`,
-    // bosses tab
-    bossesSummary: (seen, total) => `${seen} / ${total} bosses encountered`,
     // collectibles tab
     collectiblesSummary: (seen, total) => `${seen} / ${total} collectibles found`,
     missingCollectibles: n => `Missing collectibles (${n})`,
@@ -97,7 +94,6 @@ export const translations = {
     tabChallenges:   'Défis',
     tabCharacters:   'Personnages',
     tabCollectibles: 'Objets',
-    tabBosses:       'Boss',
     deadGodTitle:     'Progression Dead God',
     deadGodUnlocked:  '✓ DÉBLOQUÉ',
     deadGodRemaining: n => n === 1 ? `1 succès restant` : `${n} succès restants`,
@@ -127,7 +123,6 @@ export const translations = {
     filterTainted:    'Corrompu',
     filterIncomplete: 'Incomplet',
     characterCount:   n => `${n} personnages`,
-    bossesSummary: (seen, total) => `${seen} / ${total} boss rencontrés`,
     collectiblesSummary: (seen, total) => `${seen} / ${total} objets trouvés`,
     missingCollectibles: n => `Objets manquants (${n})`,
     filterMissing:        'Manquants',

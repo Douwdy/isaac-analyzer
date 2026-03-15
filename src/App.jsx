@@ -6,9 +6,8 @@ import collectiblesData from './data/collectibles.json';
 import itemsDB from './data/items_db.json';
 import achievementWikiLinks from './data/achievementWikiLinks.json';
 import { CHALLENGE_DATA } from './data/challengeData.js';
-import bossesData from './data/bosses.json';
 import { translations } from './data/translations.js';
-import headerLogo from './assets/sprites/headerlogo.png';
+import headerLogo from './assets/sprites/headerlogo.webp';
 import iconBoss         from './assets/sprites/icon/boss.webp';
 import iconAchievement  from './assets/sprites/icon/achievement.webp';
 import iconChallenges   from './assets/sprites/icon/challenges.webp';
@@ -16,56 +15,63 @@ import iconCollectables from './assets/sprites/icon/collectables.webp';
 import iconCharacter    from './assets/sprites/icon/character.webp';
 import iconOverview     from './assets/sprites/icon/overview.webp';
 import iconTainted      from './assets/sprites/icon/tainted.webp';
-import iconLocked       from './assets/sprites/icon/locked.png';
-import iconSteam        from './assets/sprites/icon/steam.png';
+import iconLocked       from './assets/sprites/icon/locked.webp';
+import iconSteam        from './assets/sprites/icon/steam.webp';
 import './styles/App.css';
 
 // ─── Sprite assets (loaded eagerly via Vite glob) ─────────────────────────────
-const charSpriteModules      = import.meta.glob('./assets/sprites/characters/*.png',  { eager: true });
-const completionSpriteModules = import.meta.glob('./assets/sprites/completion/*.webp', { eager: true });
+const charSpriteModules       = import.meta.glob('./assets/sprites/characters/*.webp',  { eager: true });
+const completionSpriteModules = import.meta.glob('./assets/sprites/completion/*.webp',  { eager: true });
+const achSpriteModules        = import.meta.glob('./assets/sprites/achievements/*.webp', { eager: true });
+const itemSpriteModules       = import.meta.glob('./assets/sprites/items/*.webp',        { eager: true });
+const challengeSpriteModules  = import.meta.glob('./assets/sprites/challenges/*.webp',   { eager: true });
+
+const achSprites       = Object.fromEntries(Object.entries(achSpriteModules).map(([p, m])       => [p.split('/').pop(), m.default]));
+const itemSprites      = Object.fromEntries(Object.entries(itemSpriteModules).map(([p, m])      => [p.split('/').pop(), m.default]));
+const challengeSprites = Object.fromEntries(Object.entries(challengeSpriteModules).map(([p, m]) => [p.split('/').pop(), m.default]));
 
 // character key → filename
 const CHAR_SPRITE_FILE = {
-  isaac:         'isaac.png',
-  magdalene:     'magdalene.png',
-  cain:          'cain.png',
-  judas:         'judas.png',
-  blue_baby:     'bluebaby.png',
-  eve:           'eve.png',
-  samson:        'samson.png',
-  azazel:        'azazel.png',
-  lazarus:       'lazarus.png',
-  eden:          'eden.png',
-  lost:          'thelost.png',
-  lilith:        'lilith.png',
-  keeper:        'keeper.png',
-  apollyon:      'apollyon.png',
-  the_forgotten: 'forgotten.png',
-  bethany:       'bethany.png',
-  jacob_esau:    'jacob.png',
+  isaac:         'isaac.webp',
+  magdalene:     'magdalene.webp',
+  cain:          'cain.webp',
+  judas:         'judas.webp',
+  blue_baby:     'bluebaby.webp',
+  eve:           'eve.webp',
+  samson:        'samson.webp',
+  azazel:        'azazel.webp',
+  lazarus:       'lazarus.webp',
+  eden:          'eden.webp',
+  lost:          'thelost.webp',
+  lilith:        'lilith.webp',
+  keeper:        'keeper.webp',
+  apollyon:      'apollyon.webp',
+  the_forgotten: 'forgotten.webp',
+  bethany:       'bethany.webp',
+  jacob_esau:    'jacob.webp',
 };
 
 // character key => filename
 const CHAR_T_SPRITE_FILE = {
-  isaac:         'isaac_V2.png',
-  magdalene:     'magdalene_V2.png',
-  cain:          'cain_V2.png',
-  judas:         'judas_V2.png',
-  blue_baby:     'bluebaby_V2.png',
-  eve:           'eve_V2.png',
-  samson:        'samson_V2.png',
-  azazel:        'azazel_V2.png',
-  lazarus:       'lazarus_V2.png',
-  eden:          'eden_V2.png',
-  lost:          'thelost_V2.png',
-  lilith:        'lilith_V2.png',
-  keeper:        'keeper_V2.png',
-  apollyon:      'apollyon_V2.png',
-  the_forgotten: 'forgotten_V2.png',
-  forgotten:     'forgotten_V2.png',  // t_forgotten → slice(2) → forgotten
-  bethany:       'bethany_V2.png',
-  jacob_esau:    'jacob_V2.png',
-  jacob:         'jacob_V2.png',      // t_jacob → slice(2) → jacob
+  isaac:         'isaac_V2.webp',
+  magdalene:     'magdalene_V2.webp',
+  cain:          'cain_V2.webp',
+  judas:         'judas_V2.webp',
+  blue_baby:     'bluebaby_V2.webp',
+  eve:           'eve_V2.webp',
+  samson:        'samson_V2.webp',
+  azazel:        'azazel_V2.webp',
+  lazarus:       'lazarus_V2.webp',
+  eden:          'eden_V2.webp',
+  lost:          'thelost_V2.webp',
+  lilith:        'lilith_V2.webp',
+  keeper:        'keeper_V2.webp',
+  apollyon:      'apollyon_V2.webp',
+  the_forgotten: 'forgotten_V2.webp',
+  forgotten:     'forgotten_V2.webp',  // t_forgotten → slice(2) → forgotten
+  bethany:       'bethany_V2.webp',
+  jacob_esau:    'jacob_V2.webp',
+  jacob:         'jacob_V2.webp',      // t_jacob → slice(2) → jacob
 }
 
 // mark key → filename
@@ -423,7 +429,6 @@ function Dashboard({ derived, activeTab, setActiveTab, onReset }) {
     { id: 'challenges',   icon: iconChallenges,   label: t.tabChallenges },
     { id: 'characters',   icon: iconCharacter,    label: t.tabCharacters },
     { id: 'collectibles', icon: iconCollectables, label: t.tabCollectibles },
-    // { id: 'bosses',       icon: iconBoss,         label: t.tabBosses }, // WIP
   ];
 
   return (
@@ -451,7 +456,6 @@ function Dashboard({ derived, activeTab, setActiveTab, onReset }) {
         {activeTab === 'challenges'   && <ChallengesTab derived={derived} />}
         {activeTab === 'characters'   && <CharactersTab derived={derived} />}
         {activeTab === 'collectibles' && <CollectiblesTab derived={derived} />}
-        {activeTab === 'bosses'       && <BossesTab derived={derived} />}
       </div>
 
       <div className="reset-row">
@@ -517,15 +521,6 @@ function computeDerived(saveData) {
     else missedCollectibles.push(i);
   }
 
-  // Bosses (chunk 6) — 1-indexed, position in bossesData matches save file order
-  const bossValues  = chunks[6]?.data?.values ?? [];
-  const bossesList  = bossesData.map((boss, idx) => ({
-    ...boss,
-    seen: bossValues.length > idx + 1 ? bossValues[idx + 1] !== 0 : false,
-  }));
-  const bossesDefeated = bossesList.filter(b => b.seen).length;
-  const bossesTotal    = bossValues.length > 1 ? bossValues.length - 1 : bossesData.length;
-
   // Special seeds (chunk 10) — 69 easter eggs in Repentance
   const seedValues    = chunks[10]?.data?.values ?? [];
   const seedsActive   = seedValues.filter(v => v !== 0).length;
@@ -546,7 +541,6 @@ function computeDerived(saveData) {
     seenCount,
     collTotal: Object.keys(collectiblesData).filter(k => parseInt(k) >= 1).length,
     source: 'file',
-    bossesList, bossesDefeated, bossesTotal,
     seedsActive, seedsTotal,
   };
 }
@@ -578,9 +572,6 @@ function computeSteamDerived({ unlockedIds, steamId, displayId }) {
     missedCollectibles: [],
     seenCount: 0,
     collTotal,
-    bossesList: bossesData.map(b => ({ ...b, seen: false })),
-    bossesDefeated: 0,
-    bossesTotal: bossesData.length,
     seedsActive: 0,
     seedsTotal: 69,
   };
@@ -752,17 +743,17 @@ const ACH_ICON_FILENAME = {
   "???'s Soul":                         "%3F%3F%3F's_Soul",
   "???'s Only Friend":                  "%3F%3F%3F's_Only_Friend",
   'Soul of&#160;???':                   'Soul_of_%3F%3F%3F',
-  'Platinum God!':                      '%21Platinum_God%21',
-  '1001%':                              '1001%25',
+  'Platinum God!':                      '!Platinum_God!',
+  '1001%':                              '1001pct',
+  '1000000%':                           '1000000pct',
   'D Infinity':                         'D_infinity',
   'Options?':                           'Options%3F',
-  'Something wicked this way comes+!':  'Something_wicked_this_way_comes%2B%21',
 };
 
 function achIconUrl(name) {
   const override = ACH_ICON_FILENAME[name];
-  const filename = override ?? name.replace(/ /g, '_').replace(/\?/g, '%3F').replace(/%/g, '%25').replace(/\+/g, '%2B').replace(/!/g, '%21');
-  return `https://bindingofisaacrebirth.wiki.gg/images/Achievement_${filename}_icon.png`;
+  const filename = override ?? name.replace(/ /g, '_').replace(/\?/g, '%3F');
+  return achSprites[`Achievement_${filename}_icon.webp`];
 }
 
 function AchievementsTab({ derived }) {
@@ -868,7 +859,7 @@ function ChallengesTab({ derived }) {
             <div key={c.id} className={`challenge-row ${c.done ? 'done' : 'todo'}`}>
               <div className={`chall-reward-icon${revealReward ? '' : ' hidden'}`}>
                 {rwd?.icon
-                  ? <img src={rwd.icon} alt={rwd.reward} loading="lazy"
+                  ? <img src={challengeSprites[rwd.icon]} alt={rwd.reward} loading="lazy"
                          onError={e => { e.currentTarget.style.display = 'none'; }} />
                   : <span className="chall-reward-mystery">?</span>
                 }
@@ -1087,18 +1078,14 @@ function encodeItemName(name) {
     .replace(/\$/g, '%24')
     .replace(/#/g,  '%23')
     .replace(/\//g, '%2F')
-    .replace(/\(/g, '%28')
-    .replace(/\)/g, '%29')
-    .replace(/\?/g, '%3F')
-    .replace(/!/g,  '%21')
-    .replace(/\+/g, '%2B');
-  // Apostrophes are kept literal — the wiki uses them as-is in filenames
+    .replace(/\?/g, '%3F');
+  // Apostrophes, !, (, ) are kept literal — local files use actual chars
 }
 
 function collIconUrl(name) {
   const override = COLL_ICON_FILENAME[name];
-  if (override) return `https://bindingofisaacrebirth.wiki.gg/images/Collectible_${override}_icon.png`;
-  return `https://bindingofisaacrebirth.wiki.gg/images/Collectible_${encodeItemName(name)}_icon.png`;
+  const filename = override ?? encodeItemName(name);
+  return itemSprites[`Collectible_${filename}_icon.webp`];
 }
 
 
@@ -1206,45 +1193,6 @@ function CollectiblesTab({ derived }) {
             </a>
           );
         })}
-      </div>
-    </div>
-  );
-}
-
-// ─── Bosses tab ───────────────────────────────────────────────────────────────
-
-const WIKI_BOSS_BASE = 'https://bindingofisaacrebirth.wiki.gg';
-
-function BossesTab({ derived }) {
-  const t = useLang();
-  const { bossesList, bossesDefeated, bossesTotal } = derived;
-  const pct = bossesTotal > 0 ? bossesDefeated / bossesTotal : 0;
-
-  return (
-    <div>
-      <div className="section-summary">
-        {t.bossesSummary(bossesDefeated, bossesTotal)}
-        <div className="mini-progress-track" style={{ marginTop: 8 }}>
-          <div className="mini-progress-fill" style={{ width: `${Math.round(pct * 100)}%` }} />
-        </div>
-      </div>
-      <div className="boss-grid">
-        {bossesList.map(boss => (
-          <a key={boss.name} className={`boss-card ${boss.seen ? 'seen' : 'unseen'}`}
-             href={WIKI_BOSS_BASE + boss.path} target="_blank" rel="noopener noreferrer">
-            <div className="boss-portrait">
-              <img
-                src={boss.sprite}
-                alt={boss.name}
-                className="boss-portrait-img"
-                draggable="false"
-                loading="lazy"
-                onError={e => { e.currentTarget.style.display = 'none'; }}
-              />
-            </div>
-            <span className="boss-name">{boss.name}</span>
-          </a>
-        ))}
       </div>
     </div>
   );

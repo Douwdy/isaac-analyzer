@@ -896,72 +896,6 @@ body {
 .coll-row.seen    .coll-row-status { color: var(--color-green); }
 .coll-row.missing .coll-row-status { color: var(--color-red); }
 
-/* ── Boss grid ───────────────────────────────────────────────── */
-
-.boss-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.boss-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-panel);
-  border: 1px solid rgba(212,170,88,0.15);
-  border-radius: 6px;
-  padding: 10px 6px 8px;
-  text-decoration: none;
-  color: inherit;
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
-}
-
-.boss-card:hover {
-  background: var(--bg-panel2);
-  border-color: rgba(212,170,88,0.45);
-  transform: translateY(-2px);
-}
-
-.boss-card.seen {
-  border-color: rgba(80,160,80,0.4);
-}
-
-.boss-card.unseen .boss-portrait-img {
-  opacity: 0.25;
-  filter: grayscale(1);
-}
-
-.boss-card.unseen .boss-name {
-  color: var(--text-dim);
-}
-
-.boss-portrait {
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.boss-portrait-img {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-
-.boss-name {
-  font-size: 0.68rem;
-  color: var(--text-main);
-  text-align: center;
-  line-height: 1.2;
-}
-
 /* ── Mods section ────────────────────────────────────────────── */
 
 .mods-section {
@@ -1150,7 +1084,6 @@ body {
   .missing-grid           { grid-template-columns: 1fr; }
   .mods-grid              { grid-template-columns: 1fr; }
   .char-marks-grid-outer  { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); }
-  .boss-grid              { grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); }
   .coll-list              { grid-template-columns: 1fr; }
 
   /* Filtres achievements / collectibles — wrapping plein largeur */

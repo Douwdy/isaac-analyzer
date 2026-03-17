@@ -44,6 +44,7 @@ export const translations = {
     filterUnlocked:   'Unlocked',
     achievementCount: n => `${n} achievements`,
     achievementTips:  'Achievement Tips ↗',
+    filterAllChars:   'All Characters',
     // challenges tab
     challengesSummary: (done, total) => `${done} / ${total} challenges completed`,
     // characters tab
@@ -117,6 +118,7 @@ export const translations = {
     filterUnlocked:   'Débloqué',
     achievementCount: n => `${n} succès`,
     achievementTips:  'Conseils succès ↗',
+    filterAllChars:   'Tous les personnages',
     challengesSummary: (done, total) => `${done} / ${total} défis complétés`,
     marksSummary:     (done, total) => `${done} / ${total} marques débloquées`,
     filterNormal:     'Normal',

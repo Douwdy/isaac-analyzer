@@ -1,22 +1,33 @@
 import { useState, useMemo } from 'react';
 import { useLang } from '../../context/LangContext.jsx';
 import { wikiUrl, achIconUrl } from '../../utils/urls.js';
+import { CHARACTERS } from '../../data/characterMarks.js';
+import { CHAR_ACH_MAP } from '../../utils/itemMaps.js';
+
+const NORMAL_CHARS  = CHARACTERS.filter(c => !c.tainted);
+const TAINTED_CHARS = CHARACTERS.filter(c =>  c.tainted);
 
 export default function AchievementsTab({ derived }) {
   const t = useLang();
   const { achievementsList } = derived;
   const [filter, setFilter] = useState('locked');
   const [search, setSearch] = useState('');
+  // charFilter stores char.key (e.g. 'blue_baby'), never char.name ('???'), to avoid ambiguity
+  const [charFilter, setCharFilter] = useState('');
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return achievementsList.filter(a => {
       if (filter === 'locked'   && a.unlocked)  return false;
       if (filter === 'unlocked' && !a.unlocked) return false;
+      if (charFilter) {
+        const charIds = CHAR_ACH_MAP.get(charFilter);
+        if (!charIds?.has(a.id)) return false;
+      }
       if (!q) return true;
       return a.name.toLowerCase().includes(q) || a.unlockDescription?.toLowerCase().includes(q);
     });
-  }, [achievementsList, filter, search]);
+  }, [achievementsList, filter, search, charFilter]);
 
   return (
     <div>
@@ -26,6 +37,23 @@ export default function AchievementsTab({ derived }) {
             {label}
           </button>
         ))}
+        <select
+          className="ach-char-select"
+          value={charFilter}
+          onChange={e => setCharFilter(e.target.value)}
+        >
+          <option value="">{t.filterAllChars}</option>
+          <optgroup label="Normal">
+            {NORMAL_CHARS.map(c => (
+              <option key={c.key} value={c.key}>{c.name}</option>
+            ))}
+          </optgroup>
+          <optgroup label="Tainted">
+            {TAINTED_CHARS.map(c => (
+              <option key={c.key} value={c.key}>{c.name}</option>
+            ))}
+          </optgroup>
+        </select>
         <input
           className="coll-search-input"
           placeholder={t.collSearch}
@@ -35,7 +63,7 @@ export default function AchievementsTab({ derived }) {
         <span className="filter-count">{t.achievementCount(filtered.length)}</span>
         <a className="tips-btn" href="https://bindingofisaacrebirth.wiki.gg/wiki/Achievement_Tips" target="_blank" rel="noopener noreferrer">{t.achievementTips}</a>
       </div>
-      <div className="achievement-list" key={filter + '|' + search}>
+      <div className="achievement-list" key={filter + '|' + search + '|' + charFilter}>
         {filtered.map((a, i) => (
           <a key={a.id} className={`achievement-row ${a.unlocked ? 'unlocked' : 'locked'}`}
              style={{ animationDelay: `${Math.min(i, 14) * 30}ms` }}

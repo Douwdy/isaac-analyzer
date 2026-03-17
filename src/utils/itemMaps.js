@@ -24,3 +24,12 @@ export const MARK_ACH_IDS = new Set(
 export const CHALLENGE_ACH_IDS = new Set(
   Object.values(CHALLENGE_DATA).map(d => d.achievementId).filter(Boolean)
 );
+
+// char.key → Set of achievement IDs from that character's marks
+// Key is always char.key (e.g. 'blue_baby'), never char.name (e.g. '???'), to avoid ambiguity
+export const CHAR_ACH_MAP = new Map(
+  CHARACTERS.map(char => [
+    char.key,
+    new Set(Object.values(char.marks).filter(id => id != null)),
+  ])
+);

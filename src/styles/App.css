@@ -558,6 +558,24 @@ body {
 }
 .tips-btn:hover { background: rgba(212,170,88,0.08); border-color: var(--color-gold); }
 
+.ach-char-select {
+  background: var(--bg-deep);
+  border: 1px solid rgba(200,140,50,0.25);
+  color: var(--text-main);
+  font-family: inherit; font-size: 0.65rem;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 5px 8px;
+  min-width: 160px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.ach-char-select:focus { border-color: rgba(212,170,88,0.6); outline: none; }
+.ach-char-select option, .ach-char-select optgroup {
+  background: var(--bg-panel); color: var(--text-main);
+  text-transform: none; letter-spacing: 0;
+}
+
 /* ── Liste achievements ──────────────────────────────────────── */
 
 .achievement-list {

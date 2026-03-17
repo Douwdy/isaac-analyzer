@@ -80,11 +80,16 @@ body {
   color: var(--text-dim);
   letter-spacing: 1px;
 }
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
 .header-logo {
   max-height: 90px;
   width: auto;
   image-rendering: pixelated;
   filter: drop-shadow(0 0 18px rgba(220,235,255,0.55)) drop-shadow(0 0 6px rgba(200,220,255,0.35)) drop-shadow(2px 2px 4px rgba(0,0,0,0.9));
+  animation: logo-float 3.2s ease-in-out infinite;
 }
 .lang-btn {
   position: absolute;
@@ -190,7 +195,7 @@ body {
   text-transform: uppercase;
   padding: 8px 24px;
   cursor: pointer;
-  transition: filter 0.15s, border-color 0.15s;
+  transition: filter 0.15s, border-color 0.15s, transform 0.08s;
 }
 .btn-secondary {
   display: inline-block;
@@ -204,10 +209,12 @@ body {
   text-transform: uppercase;
   padding: 8px 24px;
   cursor: pointer;
-  transition: filter 0.15s, border-color 0.15s;
+  transition: filter 0.15s, border-color 0.15s, transform 0.08s;
 }
 .btn-primary:hover  { filter: brightness(1.18); border-color: rgba(210,150,60,0.75); }
 .btn-secondary:hover { filter: brightness(1.15); border-color: rgba(160,100,40,0.65); }
+.btn-primary:active,
+.btn-secondary:active { transform: scale(0.97); filter: brightness(0.9); }
 .reset-row { text-align: center; margin-top: 32px; }
 
 /* ── Steam loader (DropZone) ─────────────────────────────────── */
@@ -384,14 +391,14 @@ body {
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
 }
-.tab-btn:hover { color: var(--text-main); background: var(--bg-panel); }
+.tab-btn:hover { color: var(--text-main); background: var(--bg-panel); transform: translateY(-1px); transition: color 0.15s, background 0.15s, transform 0.15s; }
 .tab-btn.active {
   color: var(--color-gold);
   background: var(--bg-panel);
   border-bottom-color: var(--color-gold);
   text-shadow: 0 0 10px rgba(200,140,50,0.4);
 }
-.tab-content { min-height: 300px; }
+.tab-content { min-height: 300px; animation: tab-enter 200ms ease both; }
 
 /* ── Grille stats (overview) ─────────────────────────────────── */
 
@@ -538,7 +545,9 @@ body {
 .filter-btn.active {
   color: var(--color-gold); border-color: var(--color-gold);
   background: rgba(200,140,50,0.07);
+  animation: filter-activate 0.3s ease forwards;
 }
+.filter-btn:active { transform: scale(0.93); transition: transform 0.06s; }
 .filter-count { color: var(--text-dim); font-size: 0.68rem; margin-left: auto; }
 .tips-btn {
   font-size: 0.7rem; letter-spacing: 1.5px; text-transform: uppercase;
@@ -562,13 +571,14 @@ body {
   border-left: 3px solid transparent;
   transition: background 0.1s;
   text-decoration: none; color: inherit;
+  animation: row-enter 180ms ease both;
 }
 .achievement-row:hover { background: var(--bg-panel2); }
 .achievement-row.unlocked { border-left-color: var(--color-green); }
 .achievement-row.locked   { border-left-color: rgba(180,50,50,0.5); opacity: 0.75; }
 .ach-icon { flex-shrink: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
 .ach-icon img { width: 36px; height: 36px; object-fit: contain; image-rendering: pixelated; }
-.achievement-row.locked .ach-icon img { filter: grayscale(1) brightness(0.5); }
+.achievement-row.locked .ach-icon img { filter: grayscale(1) brightness(0.5); animation: locked-breathe 3.5s ease-in-out infinite; }
 .ach-status { font-size: 0.8rem; min-width: 16px; }
 .achievement-row.unlocked .ach-status { color: var(--color-green); }
 .achievement-row.locked   .ach-status { color: var(--color-red); }
@@ -589,6 +599,7 @@ body {
   border: 1px solid rgba(200,140,50,0.08);
   border-left: 3px solid transparent;
   transition: background 0.1s;
+  animation: row-enter 180ms ease both;
 }
 .challenge-row:hover { background: var(--bg-panel2); }
 .challenge-row.done { border-left-color: var(--color-green); background: rgba(80,160,80,0.05); }
@@ -747,7 +758,7 @@ body {
   border-radius: inherit;
   pointer-events: none;
 }
-.char-lock-icon { width: 48px; height: 48px; object-fit: contain; image-rendering: pixelated; }
+.char-lock-icon { width: 48px; height: 48px; object-fit: contain; image-rendering: pixelated; animation: locked-breathe 3.5s ease-in-out infinite; }
 .char-card--locked .char-card-name { color: var(--text-dim); }
 
 /* ── Corps de la carte ── */
@@ -842,6 +853,28 @@ body {
   from { transform: translateX(-100%); }
   to   { transform: translateX(200%); }
 }
+@keyframes tab-enter {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes row-enter {
+  from { opacity: 0; transform: translateX(-5px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes locked-breathe {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 0.7; }
+}
+@keyframes filter-activate {
+  0%   { box-shadow: 0 0 0 0   rgba(212,170,88,0); }
+  40%  { box-shadow: 0 0 0 5px rgba(212,170,88,0.35); }
+  100% { box-shadow: 0 0 0 0   rgba(212,170,88,0); }
+}
+@keyframes input-focus-glow {
+  0%   { box-shadow: 0 0 0 0    rgba(212,170,88,0); }
+  50%  { box-shadow: 0 0 0 3px  rgba(212,170,88,0.3); }
+  100% { box-shadow: 0 0 8px 1px rgba(212,170,88,0.15); }
+}
 
 .mark-pip-icon         { width: 34px; height: 34px; image-rendering: pixelated; }
 .mark-pip-icon--locked { filter: grayscale(1) brightness(0.22) sepia(0.3); opacity: 0.55; }
@@ -862,7 +895,7 @@ body {
   transition: border-color 0.15s;
 }
 .coll-search-input::placeholder { color: var(--text-dim); opacity: 0.6; }
-.coll-search-input:focus { border-color: rgba(212,170,88,0.6); }
+.coll-search-input:focus { border-color: rgba(212,170,88,0.6); animation: input-focus-glow 0.35s ease forwards; outline: none; }
 
 .coll-list {
   display: grid;
@@ -878,6 +911,7 @@ body {
   text-decoration: none; color: inherit;
   transition: background 0.1s;
   min-width: 0;
+  animation: row-enter 180ms ease both;
 }
 .coll-row:hover { background: var(--bg-panel2); }
 .coll-row.seen    { border-left-color: var(--color-green); }
@@ -889,7 +923,7 @@ body {
 .coll-row-icon img {
   width: 28px; height: 28px; object-fit: contain; image-rendering: pixelated;
 }
-.coll-row.missing .coll-row-icon img { filter: grayscale(1) brightness(0.4); }
+.coll-row.missing .coll-row-icon img { filter: grayscale(1) brightness(0.4); animation: locked-breathe 3.5s ease-in-out infinite; }
 .coll-row-id   { font-size: 0.7rem; color: var(--text-dim); font-family: monospace; flex-shrink: 0; min-width: 32px; }
 .coll-row-name { font-size: 0.88rem; color: var(--text-main); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .coll-row-status { font-size: 0.75rem; flex-shrink: 0; }
@@ -1109,4 +1143,25 @@ body {
 
   /* Footer */
   .app-footer { text-align: center; }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .tab-content,
+  .achievement-row,
+  .challenge-row,
+  .coll-row,
+  .achievement-row.locked .ach-icon img,
+  .coll-row.missing .coll-row-icon img,
+  .char-lock-icon,
+  .filter-btn.active,
+  .coll-search-input:focus { animation: none; }
+
+  .filter-btn, .tab-btn,
+  .btn-primary, .btn-secondary { transition: none; }
+
+  .filter-btn:active,
+  .btn-primary:active,
+  .btn-secondary:active,
+  .tab-btn:hover { transform: none; }
 }

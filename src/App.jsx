@@ -450,7 +450,7 @@ function Dashboard({ derived, activeTab, setActiveTab, onReset }) {
         ))}
       </nav>
 
-      <div className="tab-content">
+      <div className="tab-content" key={activeTab}>
         {activeTab === 'overview'     && <OverviewTab derived={derived} />}
         {activeTab === 'achievements' && <AchievementsTab derived={derived} />}
         {activeTab === 'challenges'   && <ChallengesTab derived={derived} />}
@@ -789,9 +789,10 @@ function AchievementsTab({ derived }) {
         <span className="filter-count">{t.achievementCount(filtered.length)}</span>
         <a className="tips-btn" href="https://bindingofisaacrebirth.wiki.gg/wiki/Achievement_Tips" target="_blank" rel="noopener noreferrer">{t.achievementTips}</a>
       </div>
-      <div className="achievement-list">
-        {filtered.map(a => (
+      <div className="achievement-list" key={filter + '|' + search}>
+        {filtered.map((a, i) => (
           <a key={a.id} className={`achievement-row ${a.unlocked ? 'unlocked' : 'locked'}`}
+             style={{ animationDelay: `${Math.min(i, 14) * 30}ms` }}
              href={wikiUrl(a.name)} target="_blank" rel="noopener noreferrer">
             <div className="ach-icon">
               <img
@@ -852,11 +853,12 @@ function ChallengesTab({ derived }) {
         </div>
       </div>
       <div className="challenge-list">
-        {challenges.map(c => {
+        {challenges.map((c, i) => {
           const rwd = CHALLENGE_DATA[c.id];
           const revealReward = c.done || revealed.has(c.id);
           return (
-            <div key={c.id} className={`challenge-row ${c.done ? 'done' : 'todo'}`}>
+            <div key={c.id} className={`challenge-row ${c.done ? 'done' : 'todo'}`}
+                 style={{ animationDelay: `${Math.min(i, 14) * 30}ms` }}>
               <div className={`chall-reward-icon${revealReward ? '' : ' hidden'}`}>
                 {rwd?.icon
                   ? <img src={S.challenge(rwd.icon)} alt={rwd.reward} loading="lazy"
@@ -1176,11 +1178,12 @@ function CollectiblesTab({ derived }) {
         <span className="filter-count">{t.collItemCount(filtered.length)}</span>
       </div>
 
-      <div className="coll-list">
-        {filtered.map(c => {
+      <div className="coll-list" key={filter + '|' + search}>
+        {filtered.map((c, i) => {
           const kind = COLL_KIND_BY_ID.get(c.id);
           return (
             <a key={c.id} className={`coll-row ${c.seen ? 'seen' : 'missing'}`}
+               style={{ animationDelay: `${Math.min(i, 14) * 30}ms` }}
                href={collWikiUrl(c.id, c.name)} target="_blank" rel="noopener noreferrer">
               <div className="coll-row-icon">
                 <img src={collIconUrl(c.name)} alt="" loading="lazy"

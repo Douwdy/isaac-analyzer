@@ -778,6 +778,15 @@ body {
 }
 .char-lock-icon { width: 48px; height: 48px; object-fit: contain; image-rendering: pixelated; animation: locked-breathe 3.5s ease-in-out infinite; }
 .char-card--locked .char-card-name { color: var(--text-dim); }
+.char-card--complete .char-card-name {
+  color: var(--color-gold);
+  overflow: visible;
+  animation: name-glow 2s ease-in-out infinite alternate;
+}
+@keyframes name-glow {
+  from { filter: drop-shadow(0 0 2px rgba(200,160,50,0.3)); }
+  to   { filter: drop-shadow(0 0 8px rgba(200,160,50,0.9)); }
+}
 
 /* ── Corps de la carte ── */
 .char-card-body {
@@ -794,6 +803,18 @@ body {
 .char-card-score {
   font-size: 0.68rem; color: var(--text-dim);
   margin-left: auto; flex-shrink: 0;
+}
+.char-card-status-icon {
+  position: absolute;
+  top: 4px; right: 4px;
+  height: 24px; width: auto;
+  image-rendering: pixelated;
+  z-index: 5;
+  pointer-events: none;
+}
+.char-card--complete .char-card-status-icon {
+  animation: score-shine 2s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 4px rgba(200,160,50,0.8));
 }
 .char-card-score.complete {
   font-size: 1.1rem; color: var(--color-gold);

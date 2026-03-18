@@ -1,5 +1,7 @@
 import { BOSS_LABELS, NORMAL_MARK_KEYS, TAINTED_MARK_KEYS } from '../../data/characterMarks.js';
 import { getCharSprite, getTaintedCharSprite, getMarkSprite, iconTainted, iconLocked } from '../../utils/sprites.js';
+import completeIcon from '../../assets/complete.webp';
+import uncompleteIcon from '../../assets/uncomplete.webp';
 
 export default function CharacterMarksCard({ char, unlockedIds }) {
   const markKeys   = char.tainted ? TAINTED_MARK_KEYS : NORMAL_MARK_KEYS;
@@ -15,6 +17,7 @@ export default function CharacterMarksCard({ char, unlockedIds }) {
 
   return (
     <div className={cls}>
+      <img src={isComplete ? completeIcon : uncompleteIcon} className="char-card-status-icon" draggable="false" />
       {isLocked && (
         <div className="char-locked-overlay">
           <img src={iconLocked} className="char-lock-icon" draggable="false" />
@@ -31,9 +34,9 @@ export default function CharacterMarksCard({ char, unlockedIds }) {
       <div className="char-card-body">
         <div className="char-card-title">
           <span className="char-card-name">{char.name}</span>
-          <span className={`char-card-score${isComplete ? ' complete' : ''}`}>
-            {isComplete ? '★' : `${doneCount}/${totalCount}`}
-          </span>
+          {!isComplete && (
+            <span className="char-card-score">{doneCount}/{totalCount}</span>
+          )}
         </div>
 
         <div className={`char-marks-row${isLocked ? ' char-marks-row--locked' : ''}`}>

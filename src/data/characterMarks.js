@@ -3,7 +3,7 @@
  * Source : achievements.json + wiki Isaac Repentance
  *
  * Structure marks :
- *   hard_moms_heart, satan, ???_mark, the_lamb, mega_satan,
+ *   hard_moms_heart, isaac, satan, ???_mark, the_lamb, mega_satan,
  *   boss_rush, hush, ultra_greed, ultra_greedier, delirium, mother, beast
  *
  * Tainted uniquement :
@@ -12,6 +12,7 @@
 
 export const BOSS_LABELS = {
   hard_moms_heart: "Mom's Heart",
+  isaac:           'Isaac',
   satan:           'Satan',
   '???_mark':      '???',
   the_lamb:        'The Lamb',
@@ -30,7 +31,7 @@ export const BOSS_LABELS = {
 
 // Marks normaux (personnages réguliers)
 export const NORMAL_MARK_KEYS = [
-  'hard_moms_heart','satan','???_mark','the_lamb','mega_satan',
+  'hard_moms_heart','isaac','satan','???_mark','the_lamb','mega_satan',
   'boss_rush','hush','ultra_greedier','delirium','mother','beast',
 ];
 
@@ -45,7 +46,7 @@ export const CHARACTERS = [
   {
     id: 0, key: 'isaac', name: 'Isaac', tainted: false, unlockAchId: null,
     marks: {
-      hard_moms_heart: 167, satan: 43, '???_mark': 49, the_lamb: 149,
+      hard_moms_heart: 167, isaac: 106, satan: 43, '???_mark': 49, the_lamb: 149,
       mega_satan: 205, boss_rush: 70, hush: 179, ultra_greed: 192,
       ultra_greedier: 296, delirium: 282, mother: 440, beast: 441,
     },
@@ -53,7 +54,7 @@ export const CHARACTERS = [
   {
     id: 1, key: 'magdalene', name: 'Magdalene', tainted: false, unlockAchId: 1,
     marks: {
-      hard_moms_heart: 168, satan: 45, '???_mark': 50, the_lamb: 71,
+      hard_moms_heart: 168, isaac: 20, satan: 45, '???_mark': 50, the_lamb: 71,
       mega_satan: 206, boss_rush: 109, hush: 180, ultra_greed: 193,
       ultra_greedier: 297, delirium: 283, mother: 442, beast: 443,
     },
@@ -61,7 +62,7 @@ export const CHARACTERS = [
   {
     id: 2, key: 'cain', name: 'Cain', tainted: false, unlockAchId: 2,
     marks: {
-      hard_moms_heart: 171, satan: 46, '???_mark': 75, the_lamb: 51,
+      hard_moms_heart: 171, isaac: 21, satan: 46, '???_mark': 75, the_lamb: 51,
       mega_satan: 207, boss_rush: 110, hush: 181, ultra_greed: 194,
       ultra_greedier: 298, delirium: 284, mother: 444, beast: 445,
     },
@@ -69,7 +70,7 @@ export const CHARACTERS = [
   {
     id: 3, key: 'judas', name: 'Judas', tainted: false, unlockAchId: 3,
     marks: {
-      hard_moms_heart: 170, satan: 72, '???_mark': 77, the_lamb: 52,
+      hard_moms_heart: 170, isaac: 107, satan: 72, '???_mark': 77, the_lamb: 52,
       mega_satan: 208, boss_rush: 108, hush: 182, ultra_greed: 195,
       ultra_greedier: 299, delirium: 285, mother: 446, beast: 447,
     },
@@ -77,7 +78,7 @@ export const CHARACTERS = [
   {
     id: 4, key: 'blue_baby', name: '???', tainted: false, unlockAchId: 32,
     marks: {
-      hard_moms_heart: 174, satan: 48, '???_mark': null, the_lamb: 73,
+      hard_moms_heart: 174, isaac: 29, satan: 48, '???_mark': null, the_lamb: 73,
       mega_satan: 209, boss_rush: 114, hush: 183, ultra_greed: 196,
       ultra_greedier: 300, delirium: 286, mother: 448, beast: 449,
     },
@@ -85,7 +86,7 @@ export const CHARACTERS = [
   {
     id: 5, key: 'eve', name: 'Eve', tainted: false, unlockAchId: 42,
     marks: {
-      hard_moms_heart: 169, satan: 44, '???_mark': 53, the_lamb: 111,
+      hard_moms_heart: 169, isaac: 76, satan: 44, '???_mark': 53, the_lamb: 111,
       mega_satan: 210, boss_rush: 112, hush: 184, ultra_greed: 197,
       ultra_greedier: 302, delirium: 288, mother: 450, beast: 451,
     },
@@ -93,7 +94,7 @@ export const CHARACTERS = [
   {
     id: 6, key: 'samson', name: 'Samson', tainted: false, unlockAchId: 67,
     marks: {
-      hard_moms_heart: 177, satan: 56, '???_mark': 55, the_lamb: 74,
+      hard_moms_heart: 177, isaac: 54, satan: 56, '???_mark': 55, the_lamb: 74,
       mega_satan: 211, boss_rush: 115, hush: 185, ultra_greed: 198,
       ultra_greedier: 301, delirium: 287, mother: 452, beast: 453,
     },
@@ -101,7 +102,7 @@ export const CHARACTERS = [
   {
     id: 7, key: 'azazel', name: 'Azazel', tainted: false, unlockAchId: 79,
     marks: {
-      hard_moms_heart: 172, satan: 127, '???_mark': 128, the_lamb: 47,
+      hard_moms_heart: 172, isaac: 126, satan: 127, '???_mark': 128, the_lamb: 47,
       mega_satan: 212, boss_rush: 9, hush: 186, ultra_greed: 199,
       ultra_greedier: 304, delirium: 290, mother: 454, beast: 455,
     },
@@ -109,7 +110,7 @@ export const CHARACTERS = [
   {
     id: 8, key: 'lazarus', name: 'Lazarus', tainted: false, unlockAchId: 80,
     marks: {
-      hard_moms_heart: 173, satan: 117, '???_mark': 118, the_lamb: 119,
+      hard_moms_heart: 173, isaac: 116, satan: 117, '???_mark': 118, the_lamb: 119,
       mega_satan: 213, boss_rush: 105, hush: 187, ultra_greed: 200,
       ultra_greedier: 305, delirium: 291, mother: 456, beast: 457,
     },
@@ -117,7 +118,7 @@ export const CHARACTERS = [
   {
     id: 9, key: 'eden', name: 'Eden', tainted: false, unlockAchId: 81,
     marks: {
-      hard_moms_heart: 176, satan: 122, '???_mark': 123, the_lamb: 124,
+      hard_moms_heart: 176, isaac: 121, satan: 122, '???_mark': 123, the_lamb: 124,
       mega_satan: 214, boss_rush: 125, hush: 188, ultra_greed: 201,
       ultra_greedier: 303, delirium: 289, mother: 458, beast: 459,
     },
@@ -125,7 +126,7 @@ export const CHARACTERS = [
   {
     id: 10, key: 'lost', name: 'The Lost', tainted: false, unlockAchId: 82,
     marks: {
-      hard_moms_heart: 175, satan: 130, '???_mark': 131, the_lamb: 132,
+      hard_moms_heart: 175, isaac: 129, satan: 130, '???_mark': 131, the_lamb: 132,
       mega_satan: 215, boss_rush: 133, hush: 189, ultra_greed: 202,
       ultra_greedier: 307, delirium: 293, mother: 460, beast: 461,
     },
@@ -133,7 +134,7 @@ export const CHARACTERS = [
   {
     id: 11, key: 'lilith', name: 'Lilith', tainted: false, unlockAchId: 199,
     marks: {
-      hard_moms_heart: 223, satan: 220, '???_mark': 219, the_lamb: 221,
+      hard_moms_heart: 223, isaac: 218, satan: 220, '???_mark': 219, the_lamb: 221,
       mega_satan: 216, boss_rush: 222, hush: 190, ultra_greed: 203,
       ultra_greedier: 306, delirium: 292, mother: 462, beast: 463,
     },
@@ -141,7 +142,7 @@ export const CHARACTERS = [
   {
     id: 12, key: 'keeper', name: 'Keeper', tainted: false, unlockAchId: 251,
     marks: {
-      hard_moms_heart: 241, satan: 237, '???_mark': 238, the_lamb: 239,
+      hard_moms_heart: 241, isaac: 236, satan: 237, '???_mark': 238, the_lamb: 239,
       mega_satan: 217, boss_rush: 240, hush: 191, ultra_greed: 204,
       ultra_greedier: 308, delirium: 294, mother: 464, beast: 465,
     },
@@ -149,7 +150,7 @@ export const CHARACTERS = [
   {
     id: 13, key: 'apollyon', name: 'Apollyon', tainted: false, unlockAchId: 340,
     marks: {
-      hard_moms_heart: 318, satan: 311, '???_mark': 312, the_lamb: 313,
+      hard_moms_heart: 318, isaac: 310, satan: 311, '???_mark': 312, the_lamb: 313,
       mega_satan: 317, boss_rush: 314, hush: 315, ultra_greed: 316,
       ultra_greedier: 309, delirium: 295, mother: 466, beast: 467,
     },
@@ -157,7 +158,7 @@ export const CHARACTERS = [
   {
     id: 14, key: 'the_forgotten', name: 'The Forgotten', tainted: false, unlockAchId: 390,
     marks: {
-      hard_moms_heart: 392, satan: 394, '???_mark': 395, the_lamb: 396,
+      hard_moms_heart: 392, isaac: 393, satan: 394, '???_mark': 395, the_lamb: 396,
       mega_satan: 403, boss_rush: 397, hush: 398, ultra_greed: 399,
       ultra_greedier: 400, delirium: 401, mother: 468, beast: 469,
     },
@@ -165,7 +166,7 @@ export const CHARACTERS = [
   {
     id: 15, key: 'bethany', name: 'Bethany', tainted: false, unlockAchId: null,
     marks: {
-      hard_moms_heart: 416, satan: 418, '???_mark': 419, the_lamb: 420,
+      hard_moms_heart: 416, isaac: 417, satan: 418, '???_mark': 419, the_lamb: 420,
       mega_satan: 427, boss_rush: 421, hush: 423, ultra_greed: 422,
       ultra_greedier: 424, delirium: 425, mother: 470, beast: 471,
     },
@@ -173,7 +174,7 @@ export const CHARACTERS = [
   {
     id: 16, key: 'jacob_esau', name: 'Jacob & Esau', tainted: false, unlockAchId: null,
     marks: {
-      hard_moms_heart: 428, satan: 430, '???_mark': 431, the_lamb: 432,
+      hard_moms_heart: 428, isaac: 429, satan: 430, '???_mark': 431, the_lamb: 432,
       mega_satan: 439, boss_rush: 433, hush: 435, ultra_greed: 434,
       ultra_greedier: 436, delirium: 437, mother: 472, beast: 473,
     },

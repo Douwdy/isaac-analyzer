@@ -67,8 +67,9 @@ const CHAR_T_SPRITE_FILE = {
 // mark key → filename
 const MARK_SPRITE_FILE = {
   hard_moms_heart: 'Completion_Heart_Hard.webp',
+  isaac:           'Completion_Cathedral_Hard.webp',
   satan:           'Completion_Sheol_Hard.webp',
-  '???_mark':      'Completion_Cathedral_Hard.webp',
+  '???_mark':      'Completion_Chest_Hard.webp',
   the_lamb:        'Completion_DarkRoom_Hard.webp',
   mega_satan:      'Completion_Brimstone_Hard.webp',
   boss_rush:       'Completion_BossRush_Hard.webp',

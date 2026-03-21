@@ -6,10 +6,12 @@ import { CHALLENGE_DATA } from '../data/challengeData.js';
 // (trinkets/consommables ont des item_id qui se chevauchent avec passifs/actifs, donc filtre par kind pour COLL_KIND_BY_ID)
 export const COLL_KIND_BY_ID = new Map();
 export const ITEM_UNLOCK_BY_ID = new Map();
+export const ITEM_BY_ACH_ID = new Map(); // achievement_id → { item_id, name, kind }
 for (const i of itemsDB) {
   if (i.item_id == null || (i.kind !== 'passive' && i.kind !== 'active')) continue;
   ITEM_UNLOCK_BY_ID.set(i.item_id, { unlockCondition: i.unlock_condition, achievementId: i.achievement_id });
   COLL_KIND_BY_ID.set(i.item_id, i.kind);
+  if (i.achievement_id != null) ITEM_BY_ACH_ID.set(i.achievement_id, { item_id: i.item_id, name: i.name, kind: i.kind });
 }
 
 // Achievement ID → item kind (pour badge d'affichage + bucket Items dans MissingHighlights)

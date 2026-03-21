@@ -792,6 +792,7 @@ body {
 .char-card-body {
   padding: 8px 10px;
   display: flex; flex-direction: column; gap: 8px;
+  position: relative; z-index: 10;
 }
 .char-card-title { display: flex; align-items: center; gap: 6px; }
 .char-card-name {
@@ -920,6 +921,58 @@ body {
 .mark-pip-fallback { font-size: 0.8rem; font-weight: 700; }
 .mark-pip:not(.mark-pip--done) .mark-pip-fallback { color: var(--color-red); }
 .mark-pip--done .mark-pip-fallback { color: var(--color-green); }
+
+/* Tooltip CSS remplacé globalement par React tooltip */
+.mark-pip::before, .mark-pip::after { display: none; }
+
+/* Tooltip item unlock sur mark pip */
+.mark-item-tooltip {
+  position: fixed;
+  transform: translateX(-50%);
+  z-index: 9999;
+  background: var(--bg-panel2);
+  border: 1px solid rgba(200,140,50,0.45);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.7);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: tooltip-fade-in 0.12s ease both;
+}
+@keyframes tooltip-fade-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-3px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.mark-item-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: rgba(200,140,50,0.45);
+}
+.mark-item-tooltip-icon {
+  width: 48px; height: 48px;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+}
+.mark-item-tooltip-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mark-item-tooltip-boss {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+.mark-item-tooltip-name {
+  font-size: 0.85rem;
+  color: var(--text-bright);
+}
+
 
 /* ── Onglet collectibles ─────────────────────────────────────── */
 

@@ -13,6 +13,29 @@ import './styles/App.css';
 
 const CACHE_KEY = 'isaac_tracker_cache';
 
+const B62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+function decodeShare(encoded) {
+  let n = 0n;
+  for (const c of encoded) {
+    const v = B62.indexOf(c);
+    if (v < 0) throw new Error('invalid');
+    n = n * 62n + BigInt(v);
+  }
+  const bytes = new Uint8Array(81);
+  for (let i = 80; i >= 0; i--) { bytes[i] = Number(n & 0xFFn); n >>= 8n; }
+  const ids = new Set();
+  for (let i = 0; i < bytes.length; i++) {
+    for (let bit = 0; bit < 8; bit++) {
+      if (bytes[i] & (1 << bit)) {
+        const id = i * 8 + bit + 1;
+        if (id >= 1 && id <= 641) ids.add(id);
+      }
+    }
+  }
+  return ids;
+}
+
 function formatCacheAge(t, timestamp) {
   const mins = Math.round((Date.now() - timestamp) / 60000);
   if (mins < 60)              return t.cacheAgoMins(mins);
@@ -23,7 +46,12 @@ function formatCacheAge(t, timestamp) {
 
 export default function App() {
   const [saveData, setSaveData]     = useState(null);
-  const [steamData, setSteamData]   = useState(null);
+  const [steamData, setSteamData]   = useState(() => {
+    const hash = window.location.hash;
+    if (!hash.startsWith('#share=')) return null;
+    try { return { unlockedIds: decodeShare(hash.slice(7)), source: 'shared' }; }
+    catch { return null; }
+  });
   const [error, setError]           = useState(null);
   const [isLoading, setIsLoading]   = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
@@ -73,6 +101,7 @@ export default function App() {
   // Persist Steam session to cache
   useEffect(() => {
     if (!steamData) return;
+    if (steamData.source === 'shared') return;
     try {
       const payload = {
         source: 'steam',
@@ -131,6 +160,7 @@ export default function App() {
       const buf = await file.arrayBuffer();
       const parsed = IsaacSavefileParserV2.parse(buf);
       if (!parsed.header.isValid) throw new Error(t.errorInvalidFormat);
+      history.replaceState(null, '', window.location.pathname);
       setSteamData(null); setSaveData(parsed);
     } catch (err) { setError(err.message); }
     finally { setIsLoading(false); }
@@ -140,12 +170,16 @@ export default function App() {
     setIsLoading(true); setLoadingMsg(t.steamLoading); setError(null);
     try {
       const data = await loadFromSteam(steamId, t);
+      history.replaceState(null, '', window.location.pathname);
       setSaveData(null); setSteamData(data);
     } catch (err) { setError(err.message); }
     finally { setIsLoading(false); }
   };
 
-  const handleReset = () => { setSaveData(null); setSteamData(null); setError(null); };
+  const handleReset = () => {
+    setSaveData(null); setSteamData(null); setError(null);
+    history.replaceState(null, '', window.location.pathname);
+  };
   const handleDrop  = (e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f); };
 
   return (

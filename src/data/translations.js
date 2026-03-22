@@ -82,6 +82,10 @@ export const translations = {
     cacheAgoMins:  n => `Saved ${n}m ago`,
     cacheAgoHours: n => `Saved ${n}h ago`,
     cacheAgoDays:  n => `Saved ${n}d ago`,
+    // share
+    shareBtn:        'Share',
+    shareCopied:     'Link copied!',
+    sharedSaveBadge: 'Shared save',
     // button
     loadAnother: 'Load another save',
     feedback:    'Send feedback',
@@ -161,6 +165,10 @@ export const translations = {
     cacheAgoMins:  n => `Sauvegardé il y a ${n}min`,
     cacheAgoHours: n => `Sauvegardé il y a ${n}h`,
     cacheAgoDays:  n => `Sauvegardé il y a ${n}j`,
+    // share
+    shareBtn:        'Partager',
+    shareCopied:     'Lien copié !',
+    sharedSaveBadge: 'Save partagé',
     loadAnother: 'Charger une autre sauvegarde',
     feedback:    'Envoyer un avis',
     modsTitle:   'Mes mods Steam Workshop',

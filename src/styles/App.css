@@ -270,7 +270,9 @@ body {
 .btn-secondary:hover { filter: brightness(1.15); border-color: rgba(160,100,40,0.65); }
 .btn-primary:active,
 .btn-secondary:active { transform: scale(0.97); filter: brightness(0.9); }
-.reset-row { text-align: center; margin-top: 32px; }
+.reset-row { display: flex; justify-content: center; gap: 10px; margin-top: 32px; }
+.btn-share--copied { border-color: rgba(88,184,88,0.6) !important; color: var(--color-green) !important; }
+.steam-source-badge--shared { border-color: rgba(88,120,184,0.5); color: #a0b8e8; }
 
 /* ── Steam loader (DropZone) ─────────────────────────────────── */
 

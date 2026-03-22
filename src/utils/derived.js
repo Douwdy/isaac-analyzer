@@ -99,7 +99,7 @@ export function computeDerived(saveData) {
   };
 }
 
-export function computeSteamDerived({ unlockedIds, steamId, displayId }) {
+export function computeSteamDerived({ unlockedIds, steamId, displayId, source }) {
   const totalAch = TOTAL_ACHIEVEMENTS;
   const deadGodUnlocked = unlockedIds.has(DEAD_GOD_ACHIEVEMENT_ID);
   const { achievementsList, lockedAchievements, dlcProgress } = buildAchievementData(unlockedIds);
@@ -110,7 +110,7 @@ export function computeSteamDerived({ unlockedIds, steamId, displayId }) {
     return { id, name, done: achId != null ? unlockedIds.has(achId) : false };
   });
   return {
-    source: 'steam',
+    source: source ?? 'steam',
     steamId,
     displayId: displayId ?? steamId,
     unlockedIds,

@@ -608,6 +608,39 @@ body {
 .filter-count { color: var(--text-dim); font-size: 0.68rem; margin-left: auto; }
 .filter-row--dlc { margin-top: -6px; }
 .dlc-pct { font-size: 0.75em; opacity: 0.6; margin-left: 5px; }
+
+/* ── What's Next ──────────────────────────────────────────────── */
+.whatsnext-subtitle {
+  font-size: 0.7rem; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-dim); margin: 10px 0 6px;
+}
+.quick-wins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px; margin-bottom: 14px;
+}
+.quick-win-card {
+  background: var(--bg-panel);
+  border: 1px solid rgba(200,140,50,0.15);
+  padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.qw-portrait { width: 40px; height: 40px; object-fit: contain; }
+.qw-body { width: 100%; text-align: center; }
+.qw-name {
+  font-size: 0.68rem; color: var(--text-bright);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.qw-marks-left {
+  font-size: 0.62rem; color: var(--color-red);
+  text-transform: uppercase; letter-spacing: 1px; margin: 3px 0;
+}
+.qw-missing-marks {
+  display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; margin-top: 4px;
+}
+.qw-mark-icon { width: 20px; height: 20px; }
+
 .tips-btn {
   font-size: 0.7rem; letter-spacing: 1.5px; text-transform: uppercase;
   color: var(--color-gold); text-decoration: none;

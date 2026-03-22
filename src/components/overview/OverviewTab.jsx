@@ -1,6 +1,7 @@
 import { useLang } from '../../context/LangContext.jsx';
 import SectionTitle from '../ui/SectionTitle.jsx';
 import MissingHighlights from './MissingHighlights.jsx';
+import WhatNext from './WhatNext.jsx';
 import { computeMarksProgress } from '../../utils/derived.js';
 import {
   iconAchievement, iconChallenges, iconCharacter, iconCollectables,
@@ -39,6 +40,9 @@ export default function OverviewTab({ derived }) {
           </div>
         ))}
       </div>
+
+      <SectionTitle>{t.whatsNext}</SectionTitle>
+      <WhatNext derived={derived} />
 
       <SectionTitle>{t.whatsNeeded}</SectionTitle>
       <MissingHighlights derived={derived} />

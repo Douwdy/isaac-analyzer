@@ -29,6 +29,10 @@ export const translations = {
     infoPlaytime: 'Playtime',
     infoRuns:     'Total Runs',
     infoDeaths:   'Total Deaths',
+    // overview what's next
+    whatsNext:         "What's Next",
+    nextQuickWins:     n => `Characters almost done (${n})`,
+    nextMarksLeft:     n => n === 1 ? '1 mark left' : `${n} marks left`,
     // overview missing
     whatsNeeded:      "What's Still Missing",
     bucketChallenges: n => `Challenges (${n})`,
@@ -117,6 +121,10 @@ export const translations = {
     infoPlaytime: 'Temps de jeu',
     infoRuns:     'Parties jouées',
     infoDeaths:   'Morts totales',
+    // overview what's next
+    whatsNext:         'À faire ensuite',
+    nextQuickWins:     n => `Personnages presque terminés (${n})`,
+    nextMarksLeft:     n => n === 1 ? '1 marque restante' : `${n} marques restantes`,
     whatsNeeded:      "Ce qu'il manque",
     bucketChallenges: n => `Défis (${n})`,
     bucketMarks:      n => `Marques de complétion (${n})`,

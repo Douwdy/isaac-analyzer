@@ -137,6 +137,61 @@ body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── Cache restore banner ───────────────────────────────────── */
+
+.cache-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto 12px;
+  padding: 12px 18px;
+  background: var(--bg-panel2);
+  border: 1px solid rgba(212,170,88,0.35);
+  border-radius: 8px;
+}
+
+.cache-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cache-banner-title {
+  color: var(--text-bright);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.cache-banner-age {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
+.cache-banner-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-cache-clear {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid rgba(150,95,40,0.5);
+  border-radius: 5px;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.btn-cache-clear:hover {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
 /* ── Dropzone ────────────────────────────────────────────────── */
 
 .dropzone {

@@ -33,6 +33,9 @@ tmp/
 # Claude Code working files
 .claude/
 
+# Dev/debug scripts (not part of the app)
+public/test_images.js
+
 # Root-level data folder (leftover, app uses src/data/)
 /data/
 # Generated — rebuilt by `node build_items_db.mjs`

@@ -12,20 +12,20 @@ export const challengeWikiUrl = (id, name) =>
 
 // Some achievement names differ from their wiki image filename
 export const ACH_ICON_FILENAME = {
-  '???':                                '%3F%3F%3F',
-  "???'s Soul":                         "%3F%3F%3F's_Soul",
-  "???'s Only Friend":                  "%3F%3F%3F's_Only_Friend",
-  'Soul of&#160;???':                   'Soul_of_%3F%3F%3F',
+  '???':                                'QQQ',
+  "???'s Soul":                         "QQQ's_Soul",
+  "???'s Only Friend":                  "QQQ's_Only_Friend",
+  'Soul of&#160;???':                   'Soul_of_QQQ',
   'Platinum God!':                      '!Platinum_God!',
   '1001%':                              '1001pct',
   '1000000%':                           '1000000pct',
   'D Infinity':                         'D_infinity',
-  'Options?':                           'Options%3F',
+  'Options?':                           'Options',
 };
 
 export function achIconUrl(name) {
   const override = ACH_ICON_FILENAME[name];
-  const filename = override ?? name.replace(/ /g, '_').replace(/\?/g, '%3F');
+  const filename = override ?? name.replace(/ /g, '_').replace(/\?/g, '');
   return S.achievement(`Achievement_${filename}_icon.webp`);
 }
 
@@ -72,6 +72,7 @@ export const COLL_ICON_FILENAME = {
   'Swarm':                        'The_Swarm',
   'D Infinity':                   'D_infinity',
   'Glowing Hour Glass':           'Glowing_Hourglass',
+  'Options?':                     'Options',
 };
 
 export function encodeItemName(name) {

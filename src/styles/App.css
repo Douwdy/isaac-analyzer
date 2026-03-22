@@ -606,6 +606,8 @@ body {
 }
 .filter-btn:active { transform: scale(0.93); transition: transform 0.06s; }
 .filter-count { color: var(--text-dim); font-size: 0.68rem; margin-left: auto; }
+.filter-row--dlc { margin-top: -6px; }
+.dlc-pct { font-size: 0.75em; opacity: 0.6; margin-left: 5px; }
 .tips-btn {
   font-size: 0.7rem; letter-spacing: 1.5px; text-transform: uppercase;
   color: var(--color-gold); text-decoration: none;
